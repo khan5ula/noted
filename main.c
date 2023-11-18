@@ -84,13 +84,15 @@ int main (int argc, char *argv[]) {
 }
 
 void print_intro(void) {
-	printf("Make quick terminal notes with Entries 📝\n");
+	printf("make quick terminal notes with \033[35mentries 📝\n\033[0m");
 	printf("- - - - - - - - - - - - - - - - - - - - -\n");
 }
 
 void print_options(void) {
-	printf("entries write\t\tcreate a new entry\n");
-	printf("entries read\t\tread all entries\n");
+	printf("entries \033[35mwrite");
+	printf("\033[0m\t\tcreate a new entry\n");
+	printf("entries \033[35mread");
+	printf("\033[0m\t\tread all entries\n");
 }
 
 char check_operation_type(char *argv[]) {
@@ -115,7 +117,7 @@ void new_entry(FILE *fptr, char *separator) {
 	char timestamp[50] = {'\0'};
 	char header[40] = {'\0'};
 
-	printf("New entry:\n");
+	printf("\033[35mnew entry:\n\033[0m");
 	fgets (entry, 512, stdin);
 
 	get_time(timestamp);
@@ -126,7 +128,7 @@ void new_entry(FILE *fptr, char *separator) {
 	format_header(header, separator, timestamp);
 
 	fprintf(fptr, "%s%s\n", header, entry);
-	printf("\nEntry saved 📝\n");
+	printf("\nentry saved 📝\n");
 }
 
 void get_time(char *timestamp) {
