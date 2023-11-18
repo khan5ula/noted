@@ -61,19 +61,21 @@ int main (int argc, char *argv[]) {
 			if (operation == 'a') {
 				fptr = fopen(filepath, "a");
 				new_entry(fptr, "---");
+				fclose(fptr);
 			} else if (operation == 'r') {
 				fptr = fopen(filepath, "r");
 				read_entries(fptr);
+				fclose(fptr);
 			} else if (operation == 'w') {
 				if (clear_confirmation() == 0)  {
 					fptr = fopen(filepath, "w");
 					clear_entries(fptr);
+					fclose(fptr);
 				}
 			} else {
 				default_action();
 			  return 1;
 			}
-			fclose(fptr);
 			break;
 		default:
 			default_action();
@@ -84,15 +86,16 @@ int main (int argc, char *argv[]) {
 }
 
 void print_intro(void) {
-	printf("\033[35mentries\033[0m 📝 for quick terminal notes\n");
-	printf("- - - - - - - - - - - - - - - - - - - - -\n");
+	printf("\033[35mEntries\033[0m: Quick terminal notes 📝\n\n");
 }
 
 void print_options(void) {
-	printf("entries \033[35mnew");
-	printf("\033[0m\t\tcreate a new entry\n");
-	printf("entries \033[35mall");
-	printf("\033[0m\t\tread all entries\n");
+	printf("  \033[35mnew");
+	printf("\033[0m\t\t\t\tCreate a new entry \033[90m(n)\n");
+	printf("  \033[35mall");
+	printf("\033[0m\t\t\t\tRead all entries \033[90m(a)\n");
+	printf("  \033[35mclear");
+	printf("\033[0m\t\t\t\tDelete all entries \033[90m(rm)\033[0m\n");
 }
 
 char check_operation_type(char *argv[]) {
@@ -101,11 +104,11 @@ char check_operation_type(char *argv[]) {
 		perror("Error: Argument was expected\n");
 	}
 
-	if (strcmp(argv[1], "new") == 0) {
+	if (strcmp(argv[1], "new" ) == 0 || strcmp(argv[1], "n" ) == 0) {
 		operation = 'a';
-	} else if (strcmp(argv[1], "all") == 0) {
+	} else if (strcmp(argv[1], "all") == 0 || strcmp(argv[1], "a") == 0) {
 		operation = 'r';
-	} else if (strcmp(argv[1], "clear") == 0) {
+	} else if (strcmp(argv[1], "clear") == 0 || strcmp(argv[1], "rm") == 0) {
 		operation = 'w';
 	}
 
@@ -117,7 +120,7 @@ void new_entry(FILE *fptr, char *separator) {
 	char timestamp[50] = {'\0'};
 	char header[40] = {'\0'};
 
-	printf("\033[35mnew entry:\n\033[0m");
+	printf("Post a new entry:\n");
 	fgets (entry, 512, stdin);
 
 	get_time(timestamp);
@@ -128,7 +131,7 @@ void new_entry(FILE *fptr, char *separator) {
 	format_header(header, separator, timestamp);
 
 	fprintf(fptr, "%s%s\n", header, entry);
-	printf("entry saved 📝\n");
+	printf("Entry saved 📝\n");
 }
 
 void get_time(char *timestamp) {
@@ -149,9 +152,9 @@ void read_entries(FILE *fptr) {
 
 void clear_entries(FILE *fptr) {
 	if (ftruncate(fileno(fptr), 0) == -1) {
-        perror("Error clearing entries.");
+        perror("Error clearing entries");
     } else {
-		printf("Done.\n");
+		printf("Done\n");
 	}
 }
 
@@ -161,7 +164,7 @@ int clear_confirmation(void) {
 	scanf("%c", &result);
 	
 	if (result != 'y') {
-		printf("Entries were not cleared.\n");
+		printf("Entries were not cleared\n");
 		return 1;
 	}
 	
@@ -169,7 +172,7 @@ int clear_confirmation(void) {
 }
 
 void default_action(void) {
-	printf("Invalid Entries command.\n");
+	printf("Invalid entries command\n");
 	print_options();	
 }
 
