@@ -37,7 +37,6 @@ void default_action(void);
 
 int main (int argc, char *argv[]) {
 	FILE *fptr;
-	char separator[4] = "---";
 	char operation = '.';
 	char executablePath[900];
 	char filepath[1024];
@@ -61,7 +60,7 @@ int main (int argc, char *argv[]) {
 			operation = check_operation_type(argv);
 			if (operation == 'a') {
 				fptr = fopen(filepath, "a");
-				new_entry(fptr, separator);
+				new_entry(fptr, "---");
 			} else if (operation == 'r') {
 				fptr = fopen(filepath, "r");
 				read_entries(fptr);
