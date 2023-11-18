@@ -84,14 +84,14 @@ int main (int argc, char *argv[]) {
 }
 
 void print_intro(void) {
-	printf("make quick terminal notes with \033[35mentries 📝\n\033[0m");
+	printf("\033[35mentries\033[0m 📝 for quick terminal notes\n");
 	printf("- - - - - - - - - - - - - - - - - - - - -\n");
 }
 
 void print_options(void) {
-	printf("entries \033[35mwrite");
+	printf("entries \033[35mnew");
 	printf("\033[0m\t\tcreate a new entry\n");
-	printf("entries \033[35mread");
+	printf("entries \033[35mall");
 	printf("\033[0m\t\tread all entries\n");
 }
 
@@ -101,9 +101,9 @@ char check_operation_type(char *argv[]) {
 		perror("Error: Argument was expected\n");
 	}
 
-	if (strcmp(argv[1], "write") == 0) {
+	if (strcmp(argv[1], "new") == 0) {
 		operation = 'a';
-	} else if (strcmp(argv[1], "read") == 0) {
+	} else if (strcmp(argv[1], "all") == 0) {
 		operation = 'r';
 	} else if (strcmp(argv[1], "clear") == 0) {
 		operation = 'w';
@@ -128,7 +128,7 @@ void new_entry(FILE *fptr, char *separator) {
 	format_header(header, separator, timestamp);
 
 	fprintf(fptr, "%s%s\n", header, entry);
-	printf("\nentry saved 📝\n");
+	printf("entry saved 📝\n");
 }
 
 void get_time(char *timestamp) {

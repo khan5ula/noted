@@ -1,19 +1,19 @@
 Entries 📝 is a small command line utility for creating and reading quick notes. I wrote Entries because I like to take notes whenever I make system configurations. If (when) something goes wrong, it's easier to rollback when I have record of what I've done.
 
-Entries takes one argument: `write`, `read` or `clear`.
+Entries takes one argument: `new`, `all` or `clear`.
 
-Create a new entry with `write`:
+Create a new entry with `new`:
 
 ```zsh
-➜  ~ entries write
+➜  ~ entries new
 New entry:
 I touched a dangerous looking setting. Things could go terribly wrong. 
 ```
 
-Read all entries with `read`:
+Read all entries with `all`:
 
 ```zsh
-➜  ~ entries read 
+➜  ~ entries all 
 --- Sat Nov 18 14:48:10 2023 ---
 I touched a dangerous looking setting. Things could go terribly wrong.
 
