@@ -24,7 +24,7 @@ int build_filepath(char* executablepath, int length, char* filepath) {
 
   if (result != 1) {
     executablepath[iterator] = '\0';
-    snprintf(filepath, length + 200, "%sdata/entries.txt", executablepath);
+    snprintf(filepath, length + 200, "%s/entries.txt", executablepath);
   }
 
   return result;
@@ -63,29 +63,6 @@ char check_operation_type(char* argv[]) {
 
   return operation;
 }
-
-/*
-Iteration 3:
-Post a new entry:
-AddressSanitizer:DEADLYSIGNAL
-=================================================================
-==16914==ERROR: AddressSanitizer: SEGV on unknown address 0x0000000000c0 (pc
-0x7f2f4e475078 bp 0x000000000000 sp 0x7ffcb946bf70 T0)
-==16914==The signal is caused by a READ memory access.
-==16914==Hint: address points to the zero page.
-    #0 0x7f2f4e475078 in __vfprintf_internal
-stdio-common/vfprintf-internal.c:1218 #1 0x7f2f4e85e88f in
-__interceptor_vfprintf
-../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:1664
-    #2 0x7f2f4e85e9ce in __interceptor_fprintf
-../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:1721
-    #3 0x563225090dc4 in new_entry
-(/mnt/void/ohjelmointi/c/entries/src/main+0x2dc4) #4 0x56322509068a in main
-(/mnt/void/ohjelmointi/c/entries/src/main+0x268a) #5 0x7f2f4e429d8f in
-__libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58 #6
-0x7f2f4e429e3f in __libc_start_main_impl ../csu/libc-start.c:392 #7
-0x563225090424 in _start (/mnt/void/ohjelmointi/c/entries/src/main+0x2424)
-*/
 
 void new_entry(FILE* fptr, char* separator, int shortstr_len, int max_length) {
   char* entry = malloc(max_length + shortstr_len * 2 + 50);
