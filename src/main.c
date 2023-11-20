@@ -19,54 +19,57 @@
  */
 
 #include "entries.h"
+#include "prints.h"
 
-#define SHORT_STRINGS 60
+#define SHORT_STR_LENGTH 60
 #define BASIC_LENGTH 600
-#define FILEPATH_LENGTH 800
 
-int main(int argc, char *argv[]) {
-  FILE *fptr;
+int main(int argc, char* argv[]) {
+  FILE* fptr;
   char operation = '.';
   char executablepath[BASIC_LENGTH];
-  char filepath[FILEPATH_LENGTH];
+  char filepath[BASIC_LENGTH + 200];
 
-  if (build_filepath(executablepath, BASIC_LENGTH, filepath, FILEPATH_LENGTH) ==
-      1) {
+  if (build_filepath(executablepath, BASIC_LENGTH, filepath) == 1) {
     return 1;
   }
 
   switch (argc) {
-  case 1:
-    print_intro();
-    print_options();
-    break;
-  case 2:
-    operation = check_operation_type(argv);
-    if (operation == 'a') {
-      fptr = fopen(filepath, "a");
-      new_entry(fptr, "---", SHORT_STRINGS, BASIC_LENGTH);
-      fclose(fptr);
-    } else if (operation == 'r') {
-      fptr = fopen(filepath, "r");
-      read_entries(fptr, BASIC_LENGTH);
-      fclose(fptr);
-    } else if (operation == 'w') {
-      if (clear_confirmation() == 0) {
-        fptr = fopen(filepath, "w");
-        printf("Done\n");
-        fclose(fptr);
-      }
-    } else if (operation == 'h') {
+    case 1:
       print_intro();
       print_options();
-    } else {
+      break;
+    case 2:
+      operation = check_operation_type(argv);
+      if (operation == 'a') {
+        fptr = fopen(filepath, "a");
+        if (fptr == NULL) {
+          perror("Couldn't handle the file gracefully");
+          return 1;
+        }
+        new_entry(fptr, "---", SHORT_STR_LENGTH, BASIC_LENGTH);
+        fclose(fptr);
+      } else if (operation == 'r') {
+        fptr = fopen(filepath, "r");
+        read_entries(fptr, BASIC_LENGTH);
+        fclose(fptr);
+      } else if (operation == 'w') {
+        if (clear_confirmation() == 0) {
+          fptr = fopen(filepath, "w");
+          printf("Done\n");
+          fclose(fptr);
+        }
+      } else if (operation == 'h') {
+        print_intro();
+        print_options();
+      } else {
+        default_action();
+        return 1;
+      }
+      break;
+    default:
       default_action();
       return 1;
-    }
-    break;
-  default:
-    default_action();
-    return 1;
   }
 
   return 0;
