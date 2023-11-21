@@ -102,6 +102,7 @@ void read_entries(FILE* fptr, int max_length) {
   char* line = malloc(max_length);
   if (line == NULL) {
     perror("Error allocating memory");
+    free(line);
     return;
   }
 
