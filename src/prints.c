@@ -12,11 +12,11 @@ void print_intro(void) {
 
 void print_options(void) {
   printf("  new");
-  printf("\t\t\t\tCreate a new entry  (n)\n");
+  printf("\t\t\tCreate a new entry  (n)\n");
   printf("  all");
-  printf("\t\t\t\tRead all entries (a)\n");
+  printf("\t\t\tRead all entries (a)\n");
   printf("  clear");
-  printf("\t\t\t\tDelete all entries (rm) RESET_COLOR \n");
+  printf("\t\t\tDelete all entries (rm) RESET_COLOR \n");
 }
 
 void default_action(void) {
