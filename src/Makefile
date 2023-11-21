@@ -2,7 +2,7 @@
 
 CC = gcc
 CFLAGS = -Wall
-SRC = main.c entries.c prints.c
+SRC = main.c entries.c prints.c filehandler.c
 TARGET = main
 
 $(TARGET): $(SRC)

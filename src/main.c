@@ -19,6 +19,7 @@
  */
 
 #include "entries.h"
+#include "filehandler.h"
 #include "prints.h"
 
 #define SHORT_STR_LENGTH 60
