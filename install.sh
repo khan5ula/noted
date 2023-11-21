@@ -1,17 +1,25 @@
 #!/bin/bash
 
-# Get the current directory
-CURRENT_DIR=$(pwd)
+# Get the absolute path of the script directory
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
-# Run the Makefile in the current directory
-make
+if [ -e "$SCRIPT_DIR/src/Makefile" ]; then
+    make -C "$SCRIPT_DIR/src"
 
-# Create a bash/zsh alias for the 'entries' command
-echo "alias entries='$CURRENT_DIR/entries/src/./main'" >> ~/.bashrc  # for Bash
-echo "alias entries='$CURRENT_DIR/entries/src/./main'" >> ~/.zshrc   # for Zsh
+    if [ $? -eq 0 ]; then
+        MAIN_PATH=$(readlink -f "$SCRIPT_DIR/src/main")
 
-# Source the appropriate shell profile to make the alias immediately available
-source ~/.bashrc  # for Bash
-source ~/.zshrc   # for Zsh
+        # Create a symlink to the main executable in a directory in the PATH
+        ln -s "$MAIN_PATH" "/usr/local/bin/entries"
 
-echo "Installation complete. You can now use the 'entries' command."
+        if [ $? -eq 0 ]; then
+            echo "Entries 📝 is now installed. You can now run 'entries'."
+        else
+            echo "Error: Failed to create symlink in /usr/local/bin/. Please check for any errors above."
+        fi
+    else
+        echo "Error: Compilation failed. Please check for any errors above."
+    fi
+else
+    echo "Error: Makefile not found in the src folder. Please make sure you are in the correct directory."
+fi
