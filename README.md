@@ -20,7 +20,7 @@ Read all entries with `all`:
 ```zsh
 $ entries all
 --- Sat Nov 18 22:35:22 2023 ---
-$ I wanted to tweak this dangerous looking setting. Things might blow up...
+I wanted to tweak this dangerous looking setting. Things might blow up...
 
 --- Sat Nov 18 22:36:29 2023 ---
 Looks like everything is OK after all.
