@@ -42,7 +42,7 @@ Done
 4. Run the installation script: `./install.sh`
 5. Entries should now work. Try entering `entries` to terminal
 
-Note! Because Entries uses `symlink` to be accessible from all directories with terminal, ***Entries should be installed to the same drive with your root directory.***
+Note! Because Entries uses `soft symlink` to be accessible from all directories with terminal, ***run the installation script again if you move the source directory.***
 
 ## Delete Entries
 1. Delete the entries directory

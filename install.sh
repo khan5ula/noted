@@ -7,13 +7,16 @@ if [ -e "$SCRIPT_DIR/src/Makefile" ]; then
     make -C "$SCRIPT_DIR/src"
 
     if [ $? -eq 0 ]; then
-        # Initialize empty entries.txt
-    	touch "$SCRIPT_DIR/./entries.txt"
+        # Initialize empty entries.txt if not present
+        if [ -e "$SCRIPT_DIR/entries.txt" ]; then
+            touch "$SCRIPT_DIR/./entries.txt"
+        fi
 
         MAIN_PATH=$(readlink -f "$SCRIPT_DIR/src/main")
 
         # Create a symlink to the main executable in a directory in the PATH
-        ln "$MAIN_PATH" "/usr/local/bin/entries"
+        # Updates the existing link if present
+        ln -sf "$MAIN_PATH" "/usr/local/bin/entries"
 
         if [ $? -eq 0 ]; then
             echo "Entries 📝 is now installed. You can now run 'entries'."
