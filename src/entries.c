@@ -17,7 +17,7 @@ int build_filepath(char* executablepath, int length, char* filepath) {
 
   iterator = get_index_of_src(executablepath);
 
-  if (iterator == 0) {
+  if (iterator == 1) {
     perror("Malformatted executable path");
     result = 1;
   }
