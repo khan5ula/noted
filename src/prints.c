@@ -7,17 +7,16 @@
 #include <unistd.h>
 
 void print_intro(void) {
-  printf(PRIMARY_COLOR "Entries" RESET_COLOR ": Quick terminal notes 📝\n\n");
+  printf("Entries: Quick terminal notes 📝\n\n");
 }
 
 void print_options(void) {
-  printf("  " PRIMARY_COLOR "new");
-  printf(RESET_COLOR "\t\t\t\tCreate a new entry " PRIMARY_COLOR "(n)\n");
-  printf("  " PRIMARY_COLOR "all");
-  printf(RESET_COLOR "\t\t\t\tRead all entries " PRIMARY_COLOR "(a)\n");
-  printf("  " PRIMARY_COLOR "clear");
-  printf(RESET_COLOR "\t\t\t\tDelete all entries " PRIMARY_COLOR
-                     "(rm)" RESET_COLOR "\n");
+  printf("  new");
+  printf("\t\t\t\tCreate a new entry  (n)\n");
+  printf("  all");
+  printf("\t\t\t\tRead all entries (a)\n");
+  printf("  clear");
+  printf("\t\t\t\tDelete all entries (rm) RESET_COLOR \n");
 }
 
 void default_action(void) {
