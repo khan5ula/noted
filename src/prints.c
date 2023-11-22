@@ -16,7 +16,7 @@ void print_options(void) {
   printf("  all");
   printf("\t\t\tRead all entries (a)\n");
   printf("  clear");
-  printf("\t\t\tDelete all entries (rm) RESET_COLOR \n");
+  printf("\t\t\tDelete all entries (rm)\n");
 }
 
 void default_action(void) {
