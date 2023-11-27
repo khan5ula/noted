@@ -1,4 +1,4 @@
-Entries is a small command line utility for creating and reading quick notes. Entries allows you to write a quick terminal note without having to worry about storing the note. Entries will keep all your notes in a file and allows you to quickly read them.
+Entries is a small command line utility for creating and reading quick notes. Entries allows you to write a quick terminal note without having to worry about storing it. Fire and forget... Until you want to read it with `entries r` Entries will keep all your notes in a file and allows you to quickly read them.
 
 Entries is especially nice with drop-down terminals such as [yakuake](https://apps.kde.org/yakuake/) or [ddterm](https://github.com/ddterm/gnome-shell-extension-ddterm).
 

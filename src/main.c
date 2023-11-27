@@ -94,6 +94,9 @@ int main(int argc, char* argv[]) {
     if (argc > 2)
       countOfDsrdEntries = strtoimax(argv[2], &endptr, 10);
 
+    if (countOfDsrdEntries < 1)
+      countOfDsrdEntries = 1;
+
     read_entries_from_start(fptr, BASIC_LENGTH, countOfDsrdEntries);
     fclose(fptr);
   } else {
