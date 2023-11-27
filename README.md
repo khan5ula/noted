@@ -1,10 +1,20 @@
-Entries 📝 is a small command line utility for creating and reading quick notes. I wrote Entries because I like to take notes whenever I make system configurations. If (when) something goes wrong, it's easier to rollback when I have record of what I've done.
+Entries is a small command line utility for creating and reading quick notes. Entries allows you to write a quick terminal note without having to worry about storing the note. Entries will keep all your notes in a file and allows you to quickly read them.
+
+Entries is especially nice with drop-down terminals such as [yakuake](https://apps.kde.org/yakuake/) or [ddterm](https://github.com/ddterm/gnome-shell-extension-ddterm).
 
 Entries is written in C.
 
 ## Instructions
 
-Entries takes one argument: `new`, `all` or `clear`.
+Available arguments:
+
+- new (n)
+- all (a)
+- first (f)
+- first COUNT (f COUNT)
+- last (l)
+- last COUNT (l COUNT)
+- clear (rm)
 
 Create a new entry with `new`:
 
