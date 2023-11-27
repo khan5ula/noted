@@ -81,7 +81,6 @@ void read_entries(FILE* fptr, int max_length) {
 void read_entries_from_start(FILE* fptr, int max_length, int count) {
   char* line = malloc(max_length);
   int endOfEntryCount = 0;
-  count++;
 
   if (line == NULL) {
     perror("Error allocating memory");
@@ -89,13 +88,28 @@ void read_entries_from_start(FILE* fptr, int max_length, int count) {
     return;
   }
 
-  while (fgets(line, max_length, fptr) != NULL && endOfEntryCount <= count) {
+  while (fgets(line, max_length, fptr) != NULL &&
+         endOfEntryCount < (count + 1)) {
     if (checkForEndOfEntry(line) == 0)
       endOfEntryCount++;
 
-    if (endOfEntryCount < count)
+    if (endOfEntryCount <= count)
       printf("%s", line);
   }
+
+  free(line);
+}
+
+void read_entries_from_end(FILE* fptr, int max_length, int count) {
+  char* line = malloc(max_length);
+  if (line == NULL) {
+    perror("Error allocating memory");
+    free(line);
+    return;
+  }
+
+  while (fgets(line, max_length, fptr) != NULL)
+    ;
 
   free(line);
 }
