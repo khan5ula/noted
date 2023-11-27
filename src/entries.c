@@ -20,6 +20,10 @@ char check_operation_type(char* argv[]) {
     operation = 'w';
   } else if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "help") == 0) {
     operation = 'h';
+  } else if (strcmp(argv[1], "last") == 0 || strcmp(argv[1], "l") == 0) {
+    operation = 'l';
+  } else if (strcmp(argv[1], "first") == 0 || strcmp(argv[1], "f") == 0) {
+    operation = 'f';
   }
 
   return operation;
@@ -72,6 +76,46 @@ void read_entries(FILE* fptr, int max_length) {
   }
 
   free(line);
+}
+
+void read_entries_from_start(FILE* fptr, int max_length, int count) {
+  char* line = malloc(max_length);
+  int endOfEntryCount = 0;
+  count++;
+
+  if (line == NULL) {
+    perror("Error allocating memory");
+    free(line);
+    return;
+  }
+
+  while (fgets(line, max_length, fptr) != NULL && endOfEntryCount <= count) {
+    if (checkForEndOfEntry(line) == 0)
+      endOfEntryCount++;
+
+    if (endOfEntryCount < count)
+      printf("%s", line);
+  }
+
+  free(line);
+}
+
+int checkForEndOfEntry(char* line) {
+  int result = 0;
+  int length = strlen(line);
+
+  if (length < 25 || length > 40) {
+    result = 1;
+  } else {
+    for (int i = 0, j = length - 2; i < 3; i++, j--) {
+      if (line[i] != '-' || line[j] != '-') {
+        result = 1;
+        break;
+      }
+    }
+  }
+
+  return result;
 }
 
 int clear_confirmation(void) {

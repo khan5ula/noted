@@ -18,6 +18,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
+#include <inttypes.h>
 #include "entries.h"
 #include "filehandler.h"
 #include "prints.h"
@@ -35,42 +36,69 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  switch (argc) {
-    case 1:
-      print_intro();
-      print_options();
-      break;
-    case 2:
-      operation = check_operation_type(argv);
-      if (operation == 'a') {
-        fptr = fopen(filepath, "a");
-        if (fptr == NULL) {
-          perror("Couldn't handle the file gracefully");
-          return 1;
-        }
-        new_entry(fptr, "---", SHORT_STR_LENGTH, BASIC_LENGTH);
-        fclose(fptr);
-      } else if (operation == 'r') {
-        fptr = fopen(filepath, "r");
-        read_entries(fptr, BASIC_LENGTH);
-        fclose(fptr);
-      } else if (operation == 'w') {
-        if (clear_confirmation() == 0) {
-          fptr = fopen(filepath, "w");
-          printf("Done\n");
-          fclose(fptr);
-        }
-      } else if (operation == 'h') {
-        print_intro();
-        print_options();
-      } else {
-        default_action();
+  if (argc == 1) {
+    print_intro();
+    print_options();
+    return 0;
+  }
+
+  operation = check_operation_type(argv);
+
+  if (operation == 'a') {
+    fptr = fopen(filepath, "a");
+    if (fptr == NULL) {
+      perror("Couldn't open or create the file");
+      return 1;
+    }
+    new_entry(fptr, "---", SHORT_STR_LENGTH, BASIC_LENGTH);
+    fclose(fptr);
+  } else if (operation == 'r') {
+    fptr = fopen(filepath, "r");
+    if (fptr == NULL) {
+      perror("Couldn't open the file");
+      return 1;
+    }
+    read_entries(fptr, BASIC_LENGTH);
+    fclose(fptr);
+  } else if (operation == 'w') {
+    if (clear_confirmation() == 0) {
+      fptr = fopen(filepath, "w");
+      if (fptr == NULL) {
+        perror("Something went wrong when processing the file");
         return 1;
       }
-      break;
-    default:
-      default_action();
+      printf("Done\n");
+      fclose(fptr);
+    }
+  } else if (operation == 'h') {
+    print_intro();
+    print_options();
+  } else if (operation == 'l') {
+    fptr = fopen(filepath, "r");
+    if (fptr == NULL) {
+      perror("Couldn't open the file");
       return 1;
+    }
+    // call the function to read the last entry
+    fclose(fptr);
+  } else if (operation == 'f') {
+    int countOfDsrdEntries = 1;
+    char* endptr;
+
+    fptr = fopen(filepath, "r");
+    if (fptr == NULL) {
+      perror("Couldn't open the file");
+      return 1;
+    }
+
+    if (argc > 2)
+      countOfDsrdEntries = strtoimax(argv[2], &endptr, 10);
+
+    read_entries_from_start(fptr, BASIC_LENGTH, countOfDsrdEntries);
+    fclose(fptr);
+  } else {
+    default_action();
+    return 1;
   }
 
   return 0;
