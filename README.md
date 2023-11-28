@@ -1,7 +1,7 @@
 # Entries
-Entries is a small command line utility for creating and reading quick notes. Entries allows you to write a quick terminal note without having to worry about storing it. Fire and forget... Until you want to read it with `entries r` Entries will keep all your notes in a file and allows you to quickly read them.
+Entries is a small command line utility for creating and reading quick notes. Entries allows you to write a quick terminal note without having to worry about storing it. Fire and forget... Until you want to read it. Entries will keep all your notes in a file and allows you to quickly read them.
 
-Entries is for writing single-line notes that are no longer than 1000 characters.
+Entries is designed for creating single-line notes with a maximum length of 1000 characters. Keep in mind that entries are confirmed by pressing `enter`, so entries with newlines are not supported.
 
 Entries is especially nice with drop-down terminals such as [yakuake](https://apps.kde.org/yakuake/) or [ddterm](https://github.com/ddterm/gnome-shell-extension-ddterm).
 <br /><br />
@@ -39,7 +39,25 @@ I wanted to tweak this dangerous looking setting. Things might blow up...
 Looks like everything is OK after all.
 ```
 
-Clear entries with `clear`:
+Read the first entry with `first`:
+```zsh
+$ entries first
+--- Tue Nov 21 15:06:45 2023 ---
+Something I've posted a while back...
+```
+
+Read the two latest entries with `last 2`:
+
+```zsh
+$ entries last 2
+--- Tue Nov 28 10:36:40 2023 ---
+Buy tomato sauce
+
+--- Tue Nov 28 11:04:57 2023 ---
+Make that two cans actually
+```
+
+Nuke all entries with `clear`:
 
 ```zsh
 $ entries clear            
