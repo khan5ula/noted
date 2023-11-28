@@ -1,7 +1,6 @@
 #ifndef FILEHANDLER_H
 #define FILEHANDLER_H
 
-#include <inttypes.h>
 #include <stdio.h>
 
 int build_filepath(char* executablepath, int length, char* filepath);
