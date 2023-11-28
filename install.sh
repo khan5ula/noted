@@ -8,7 +8,7 @@ if [ -e "$SCRIPT_DIR/src/Makefile" ]; then
 
     if [ $? -eq 0 ]; then
         # Initialize empty entries.txt if not present
-        if [ ! -e "$SCRIPT_DIR/entries.txt" ]; then
+        if [ ! package-e "$SCRIPT_DIR/entries.txt" ]; then
             touch "$SCRIPT_DIR/./entries.txt"
         fi
 
@@ -19,7 +19,7 @@ if [ -e "$SCRIPT_DIR/src/Makefile" ]; then
         ln -sf "$MAIN_PATH" "/usr/local/bin/entries"
 
         if [ $? -eq 0 ]; then
-            echo "Entries 📝 is now installed. You can now run 'entries'."
+            echo "Install succesful! 🔥 Start by writing 'entries'."
         else
             echo "Error: Failed to create symlink in /usr/local/bin/. Please check for any errors above."
         fi
