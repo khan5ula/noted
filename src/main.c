@@ -23,16 +23,15 @@
 #include "filehandler.h"
 #include "prints.h"
 
-#define SHORT_STR_LENGTH 60
-#define BASIC_LENGTH 600
+#define FILEPATH_LENGTH 600
 
 int main(int argc, char* argv[]) {
   FILE* fptr;
   char operation = '.';
-  char executablepath[BASIC_LENGTH];
-  char filepath[BASIC_LENGTH + 200];
+  char executablepath[FILEPATH_LENGTH];
+  char filepath[FILEPATH_LENGTH + 200];
 
-  if (build_filepath(executablepath, BASIC_LENGTH, filepath) == 1) {
+  if (build_filepath(executablepath, FILEPATH_LENGTH, filepath) == 1) {
     return 1;
   }
 
@@ -50,7 +49,7 @@ int main(int argc, char* argv[]) {
       perror("Couldn't open or create the file");
       return 1;
     }
-    new_entry(fptr, "---", SHORT_STR_LENGTH, BASIC_LENGTH);
+    new_entry(fptr, "---");
     fclose(fptr);
   } else if (operation == 'r') {
     fptr = fopen(filepath, "r");
@@ -58,7 +57,7 @@ int main(int argc, char* argv[]) {
       perror("Couldn't open the file");
       return 1;
     }
-    read_entries(fptr, BASIC_LENGTH);
+    read_entries(fptr);
     fclose(fptr);
   } else if (operation == 'w') {
     if (clear_confirmation() == 0) {
@@ -74,12 +73,22 @@ int main(int argc, char* argv[]) {
     print_intro();
     print_options();
   } else if (operation == 'l') {
+    int countOfDsrdEntries = 1;
+    char* endptr;
+
     fptr = fopen(filepath, "r");
     if (fptr == NULL) {
       perror("Couldn't open the file");
       return 1;
     }
-    // call the function to read the last entry
+
+    if (argc > 2)
+      countOfDsrdEntries = strtoimax(argv[2], &endptr, 10);
+
+    if (countOfDsrdEntries < 1)
+      countOfDsrdEntries = 1;
+
+    read_entries_from_end(fptr, countOfDsrdEntries);
     fclose(fptr);
   } else if (operation == 'f') {
     int countOfDsrdEntries = 1;
@@ -97,7 +106,7 @@ int main(int argc, char* argv[]) {
     if (countOfDsrdEntries < 1)
       countOfDsrdEntries = 1;
 
-    read_entries_from_start(fptr, BASIC_LENGTH, countOfDsrdEntries);
+    read_entries_from_start(fptr, countOfDsrdEntries);
     fclose(fptr);
   } else {
     default_action();
