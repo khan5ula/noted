@@ -24,7 +24,7 @@ void print_options(void) {
   printf("  last COUNT");
   printf("\t\t\tRead a desired number of entries from the end (l COUNT)\n");
   printf("  clear");
-  printf("\t\t\t\tDelete all entries (rm)\n");
+  printf("\t\t\t\tDelete all entries (rm)\n\n");
 }
 
 void default_action(void) {
