@@ -18,7 +18,6 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include <inttypes.h>
 #include "entries.h"
 #include "filehandler.h"
 #include "prints.h"
@@ -73,40 +72,25 @@ int main(int argc, char* argv[]) {
     print_intro();
     print_options();
   } else if (operation == 'l') {
-    int countOfDsrdEntries = 1;
-    char* endptr;
-
     fptr = fopen(filepath, "r");
+
     if (fptr == NULL) {
       perror("Couldn't open the file");
       return 1;
     }
 
-    if (argc > 2)
-      countOfDsrdEntries = strtoimax(argv[2], &endptr, 10);
-
-    if (countOfDsrdEntries < 1)
-      countOfDsrdEntries = 1;
-
-    read_entries_from_end(fptr, countOfDsrdEntries);
+    read_entries_from_end(fptr, getCountOfDsrdEntries(argc, argv));
     fclose(fptr);
-  } else if (operation == 'f') {
-    int countOfDsrdEntries = 1;
-    char* endptr;
 
+  } else if (operation == 'f') {
     fptr = fopen(filepath, "r");
+
     if (fptr == NULL) {
       perror("Couldn't open the file");
       return 1;
     }
 
-    if (argc > 2)
-      countOfDsrdEntries = strtoimax(argv[2], &endptr, 10);
-
-    if (countOfDsrdEntries < 1)
-      countOfDsrdEntries = 1;
-
-    read_entries_from_start(fptr, countOfDsrdEntries);
+    read_entries_from_start(fptr, getCountOfDsrdEntries(argc, argv));
     fclose(fptr);
   } else {
     default_action();
