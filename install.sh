@@ -8,7 +8,7 @@ if [ -e "$SCRIPT_DIR/src/Makefile" ]; then
 
     if [ $? -eq 0 ]; then
         # Initialize empty entries.txt if not present
-        if [ ! package-e "$SCRIPT_DIR/entries.txt" ]; then
+        if [ ! -e "$SCRIPT_DIR/entries.txt" ]; then
             touch "$SCRIPT_DIR/./entries.txt"
         fi
 
