@@ -7,16 +7,22 @@
 #include <unistd.h>
 
 void print_intro(void) {
-  printf("Entries: Quick terminal notes 📝\n\n");
+  printf("Entries - Quick terminal notes\n\n");
 }
 
 void print_options(void) {
   printf("  new");
-  printf("\t\t\tCreate a new entry  (n)\n");
+  printf("\t\t\t\tCreate a new entry (n)\n");
   printf("  all");
-  printf("\t\t\tRead all entries (a)\n");
+  printf("\t\t\t\tRead all entries (a)\n");
+  printf("  last");
+  printf("\t\t\t\tRead the last entry (l)\n");
+  printf("  first");
+  printf("\t\t\t\tRead the first entry (f)\n");
+  printf("  first COUNT");
+  printf("\t\t\tRead a desired number of entries from the start (f COUNT)\n");
   printf("  clear");
-  printf("\t\t\tDelete all entries (rm)\n");
+  printf("\t\t\t\tDelete all entries (rm)\n");
 }
 
 void default_action(void) {

@@ -22,55 +22,79 @@
 #include "filehandler.h"
 #include "prints.h"
 
-#define SHORT_STR_LENGTH 60
-#define BASIC_LENGTH 600
+#define FILEPATH_LENGTH 600
 
 int main(int argc, char* argv[]) {
   FILE* fptr;
   char operation = '.';
-  char executablepath[BASIC_LENGTH];
-  char filepath[BASIC_LENGTH + 200];
+  char executablepath[FILEPATH_LENGTH];
+  char filepath[FILEPATH_LENGTH + 200];
 
-  if (build_filepath(executablepath, BASIC_LENGTH, filepath) == 1) {
+  if (build_filepath(executablepath, FILEPATH_LENGTH, filepath) == 1) {
     return 1;
   }
 
-  switch (argc) {
-    case 1:
-      print_intro();
-      print_options();
-      break;
-    case 2:
-      operation = check_operation_type(argv);
-      if (operation == 'a') {
-        fptr = fopen(filepath, "a");
-        if (fptr == NULL) {
-          perror("Couldn't handle the file gracefully");
-          return 1;
-        }
-        new_entry(fptr, "---", SHORT_STR_LENGTH, BASIC_LENGTH);
-        fclose(fptr);
-      } else if (operation == 'r') {
-        fptr = fopen(filepath, "r");
-        read_entries(fptr, BASIC_LENGTH);
-        fclose(fptr);
-      } else if (operation == 'w') {
-        if (clear_confirmation() == 0) {
-          fptr = fopen(filepath, "w");
-          printf("Done\n");
-          fclose(fptr);
-        }
-      } else if (operation == 'h') {
-        print_intro();
-        print_options();
-      } else {
-        default_action();
+  if (argc == 1) {
+    print_intro();
+    print_options();
+    return 0;
+  }
+
+  operation = check_operation_type(argv);
+
+  if (operation == 'a') {
+    fptr = fopen(filepath, "a");
+    if (fptr == NULL) {
+      perror("Couldn't open or create the file");
+      return 1;
+    }
+    new_entry(fptr, "---");
+    fclose(fptr);
+  } else if (operation == 'r') {
+    fptr = fopen(filepath, "r");
+    if (fptr == NULL) {
+      perror("Couldn't open the file");
+      return 1;
+    }
+    read_entries(fptr);
+    fclose(fptr);
+  } else if (operation == 'w') {
+    if (clear_confirmation() == 0) {
+      fptr = fopen(filepath, "w");
+      if (fptr == NULL) {
+        perror("Something went wrong when processing the file");
         return 1;
       }
-      break;
-    default:
-      default_action();
+      printf("Done\n");
+      fclose(fptr);
+    }
+  } else if (operation == 'h') {
+    print_intro();
+    print_options();
+  } else if (operation == 'l') {
+    fptr = fopen(filepath, "r");
+
+    if (fptr == NULL) {
+      perror("Couldn't open the file");
       return 1;
+    }
+
+    read_entries_from_end(fptr, getCountOfDsrdEntries(argc, argv));
+    fclose(fptr);
+
+  } else if (operation == 'f') {
+    fptr = fopen(filepath, "r");
+
+    if (fptr == NULL) {
+      perror("Couldn't open the file");
+      return 1;
+    }
+
+    read_entries_from_start(fptr, getCountOfDsrdEntries(argc, argv));
+    fclose(fptr);
+  } else {
+    default_action();
+    return 1;
   }
 
   return 0;

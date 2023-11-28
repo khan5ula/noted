@@ -42,3 +42,16 @@ int get_index_of_src(char* path) {
   }
   return indexOfSrc;
 }
+
+int getCountOfDsrdEntries(int argc, char* argv[]) {
+  int result = 1;
+  char* endptr;
+
+  if (argc > 2)
+    result = strtoimax(argv[2], &endptr, 10);
+
+  if (result < 1)
+    result = 1;
+
+  return result;
+}
