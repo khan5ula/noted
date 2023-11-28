@@ -83,7 +83,7 @@ chmod +x ./install.sh
 bash install.sh
 ```
 
-Note! Because Entries uses `soft symlink` to be accessible from all directories with terminal, ***run the installation script again if you move the source directory.***
+Note! Because Entries uses `soft symlink` to be accessible from all directories with terminal, ***run the installation script again if you move the source directory.***. Running the installation script again will not delete your entries.
 
 <br />
 
