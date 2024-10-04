@@ -3,7 +3,7 @@ use noted::note::Note;
 use rusqlite::Connection;
 use std::env;
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 
 enum SortOrder {
     Asc,
@@ -62,6 +62,38 @@ fn main() -> Result<()> {
                     return get_some_notes(conn, 1, SortOrder::Asc);
                 }
             }
+            "delete" | "remove" | "d" | "rm" => {
+                // check whether the next param is a
+                // check whether the next param is an id
+                if args.len() < 4 {
+                    println!(
+                        "Specify which note you would like to remove by providing the note ID"
+                    );
+                    println!("You can also remove all notes with the option 'all'");
+                } else {
+                    match args[3].as_str() {
+                        "a" | "all" => {
+                            print!("Are you sure you want to remove all notes? [y]/[n]\n==> ");
+                            let _ = io::stdout().flush();
+                            let mut user_input = String::new();
+                            io::stdin().read_line(&mut user_input)?;
+
+                            match user_input.trim().chars().next() {
+                                Some('y') => {
+                                    conn.execute("DROP TABLE note", ())?;
+                                }
+                                _ => {
+                                    println!("Cancelling");
+                                }
+                            }
+                        }
+                        _ => {
+                            // delete specific note
+                            return delete_note(&conn, args[3].clone());
+                        }
+                    }
+                }
+            }
             _ => {}
         }
     }
@@ -99,10 +131,27 @@ fn get_all_notes(conn: Connection) -> Result<()> {
         Ok(Note::from_db(row.get(0)?, row.get(1)?, row.get(2)?))
     })?;
 
-    println!("\n");
+    let mut notes_found = false;
 
-    for note in note_iterator {
-        println!("{}", note.unwrap().unwrap());
+    for iter_result in note_iterator {
+        match iter_result {
+            Ok(note_result) => match note_result {
+                Ok(note) => {
+                    notes_found = true;
+                    println!("{}", note);
+                }
+                Err(e) => {
+                    println!("Couldn't unwrap note: {}", e);
+                }
+            },
+            Err(e) => {
+                println!("Couldn't iterate through notes: {}", e);
+            }
+        }
+    }
+
+    if !notes_found {
+        println!("No notes to display");
     }
 
     Ok(())
@@ -120,10 +169,48 @@ fn get_some_notes(conn: Connection, count: i32, order_by: SortOrder) -> Result<(
         Ok(Note::from_db(row.get(0)?, row.get(1)?, row.get(2)?))
     })?;
 
-    println!("\n");
+    let mut notes_found = false;
 
-    for note in note_iterator {
-        println!("{}", note.unwrap().unwrap());
+    for iter_result in note_iterator {
+        match iter_result {
+            Ok(note_result) => match note_result {
+                Ok(note) => {
+                    notes_found = true;
+                    println!("{}", note);
+                }
+                Err(e) => {
+                    println!("Couldn't unwrap note: {}", e);
+                }
+            },
+            Err(e) => {
+                println!("Couldn't iterate through notes: {}", e);
+            }
+        }
+    }
+
+    if !notes_found {
+        println!("No notes to display");
+    }
+
+    Ok(())
+}
+
+fn delete_note(conn: &Connection, id: String) -> Result<()> {
+    let like_id = format!("{}%", id);
+
+    match conn.execute("DELETE FROM note WHERE id LIKE ?", [like_id]) {
+        Ok(rows_deleted) => {
+            println!(
+                "Deleted {} note(s) with ID starting with '{}'",
+                rows_deleted, id
+            );
+        }
+        Err(e) => {
+            println!(
+                "Couldn't remove a note with given id: '{}' due to: {}",
+                id, e
+            );
+        }
     }
 
     Ok(())

@@ -61,7 +61,7 @@ pub mod note {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(
                 f,
-                "_____ {} _____\n      {}      \n\n{}\n",
+                "_____ {} _____\n      {}      \n\n{}",
                 Blue.bold().paint(Note::get_datetime(self)),
                 Blue.paint(&self.id[0..25]),
                 self.content
