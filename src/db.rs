@@ -38,7 +38,7 @@ pub fn create_new_note(conn: Connection, content: String) -> Result<(), NoteErro
     let new_note = Note::new(content);
 
     match conn.execute(
-        "insert into note (id, content, date) values (?1, ?2, ?3)",
+        "INSERT INTO note (id, content, date) VALUES (?1, ?2, ?3)",
         (
             &new_note.get_id().to_string(),
             &new_note.get_content(),
@@ -136,4 +136,23 @@ pub fn delete_note(conn: &Connection, id: String) -> Result<(), NoteError> {
             Err(NoteError::RustqliteError(e))
         }
     }
+}
+
+pub fn find_notes(conn: &Connection, needle: String) -> Result<(), NoteError> {
+    let query = "SELECT id, content, date FROM note WHERE content LIKE ?";
+    let search_with_wildcards = format!("%{}%", needle);
+
+    let mut statement = match conn.prepare(query) {
+        Ok(statement) => statement,
+        Err(e) => return Err(NoteError::RustqliteError(e)),
+    };
+
+    let note_iterator = match statement.query_map([search_with_wildcards], |row| {
+        Ok(Note::from_db(row.get(0)?, row.get(1)?, row.get(2)?))
+    }) {
+        Ok(iterator) => iterator,
+        Err(e) => return Err(NoteError::IterationError(e)),
+    };
+
+    print_notes(note_iterator)
 }

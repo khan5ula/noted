@@ -54,7 +54,12 @@ fn main() -> Result<(), NoteError> {
                 handle_delete(args, conn)?;
             }
             "search" | "s" => {
-                todo!("implement search");
+                if args.len() < 4 {
+                    println!("Provide the search term");
+                } else {
+                    let needle = &args[3];
+                    find_notes(&conn, needle.to_string())?;
+                }
             }
             _ => {}
         }
