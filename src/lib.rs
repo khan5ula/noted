@@ -14,7 +14,7 @@ pub mod note {
     }
 
     impl Note {
-        pub fn new(content: &str) -> Self {
+        pub fn new(content: String) -> Self {
             Note {
                 id: Uuid::new_v4().to_string(),
                 content: content.to_string(),
@@ -66,6 +66,20 @@ pub mod note {
                 Blue.paint(&self.id[0..25]),
                 self.content
             )
+        }
+    }
+}
+
+pub enum SortOrder {
+    Asc,
+    Desc,
+}
+
+impl SortOrder {
+    pub fn as_str(&self) -> &str {
+        match self {
+            SortOrder::Asc => "ASC",
+            SortOrder::Desc => "DESC",
         }
     }
 }
