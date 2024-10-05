@@ -5,6 +5,8 @@ pub mod note {
     use ansi_term::Colour::Blue;
     use chrono::prelude::*;
     use chrono::Local;
+    use rusqlite::Error;
+    use std::error::Error as StdError;
 
     #[derive(Debug)]
     pub struct Note {
@@ -68,6 +70,29 @@ pub mod note {
             )
         }
     }
+
+    #[derive(Debug)]
+    pub enum NoteError {
+        IterationError(Error),
+        UnwrapNoteError(String),
+        RustqliteError(Error),
+    }
+
+    impl fmt::Display for NoteError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                NoteError::IterationError(e) => {
+                    write!(f, "Couldn't iterate through notes: {}", e)
+                }
+                NoteError::UnwrapNoteError(e) => write!(f, "Couldn't unwrap note: {}", e),
+                NoteError::RustqliteError(e) => {
+                    write!(f, "Rustqlite error while handling notes: {}", e)
+                }
+            }
+        }
+    }
+
+    impl StdError for NoteError {}
 }
 
 pub enum SortOrder {

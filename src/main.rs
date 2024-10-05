@@ -13,7 +13,7 @@ fn main() -> Result<()> {
     let conn = Connection::open(cwd.join("notes.db"))?;
 
     match create_table(&conn) {
-        Ok(()) => {}
+        Ok(_) => {}
         Err(e) => {
             eprintln!("Couldn't initialize the database: {}", e);
         }
@@ -34,7 +34,7 @@ fn main() -> Result<()> {
                             if args.len() > 4 {
                                 let filepath = &args[4];
                                 let note_content = read_file(filepath)?;
-                                return create_new_note(conn, note_content);
+                                return Ok(create_new_note(conn, note_content)?);
                             } else {
                                 println!("Provide the file as an argument, eg:");
                                 println!("  noted new --file \"path-to-my-file.txt\"",);
@@ -42,35 +42,33 @@ fn main() -> Result<()> {
                         }
                         _ => {
                             let note_content = args[3..].join(" ");
-                            return create_new_note(conn, note_content);
+                            return Ok(create_new_note(conn, note_content)?);
                         }
                     }
                 }
             }
             "all" | "a" => {
-                return get_all_notes(conn);
+                return Ok(get_all_notes(conn)?);
             }
             "last" | "l" => {
                 if args.len() > 3 {
                     if let Ok(count) = args[3].parse::<i32>() {
-                        return get_some_notes(conn, count, SortOrder::Desc);
+                        return Ok(get_some_notes(conn, count, SortOrder::Desc)?);
                     }
                 } else {
-                    return get_some_notes(conn, 1, SortOrder::Desc);
+                    return Ok(get_some_notes(conn, 1, SortOrder::Desc)?);
                 }
             }
             "first" | "f" => {
                 if args.len() > 3 {
                     if let Ok(count) = args[3].parse::<i32>() {
-                        return get_some_notes(conn, count, SortOrder::Asc);
+                        return Ok(get_some_notes(conn, count, SortOrder::Asc)?);
                     }
                 } else {
-                    return get_some_notes(conn, 1, SortOrder::Asc);
+                    return Ok(get_some_notes(conn, 1, SortOrder::Asc)?);
                 }
             }
             "delete" | "remove" | "d" | "rm" => {
-                // check whether the next param is a
-                // check whether the next param is an id
                 if args.len() < 4 {
                     println!(
                         "Specify which note you would like to remove by providing the note ID"
@@ -94,7 +92,7 @@ fn main() -> Result<()> {
                             }
                         }
                         _ => {
-                            return delete_note(&conn, args[3].clone());
+                            return Ok(delete_note(&conn, args[3].clone())?);
                         }
                     }
                 }
