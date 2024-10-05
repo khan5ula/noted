@@ -4,7 +4,7 @@ use noted::SortOrder;
 use rusqlite::Connection;
 use rusqlite::Error;
 use std::fs::File;
-use std::io::{self, Read};
+use std::io::Read;
 
 pub fn create_table(conn: &Connection) -> Result<(), NoteError> {
     match conn.execute(
@@ -20,11 +20,18 @@ pub fn create_table(conn: &Connection) -> Result<(), NoteError> {
     }
 }
 
-pub fn read_file(path: &str) -> io::Result<String> {
-    let mut file = File::open(path)?;
+pub fn read_file(path: &str) -> Result<String, NoteError> {
+    let mut file = match File::open(path) {
+        Ok(file) => file,
+        Err(e) => return Err(NoteError::FileError(e.to_string())),
+    };
+
     let mut file_content = String::new();
-    file.read_to_string(&mut file_content)?;
-    Ok(file_content)
+
+    match file.read_to_string(&mut file_content) {
+        Ok(_) => Ok(file_content),
+        Err(e) => Err(NoteError::FileError(e.to_string())),
+    }
 }
 
 pub fn create_new_note(conn: Connection, content: String) -> Result<(), NoteError> {

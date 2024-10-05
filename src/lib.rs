@@ -76,6 +76,8 @@ pub mod note {
         IterationError(Error),
         UnwrapNoteError(String),
         RustqliteError(Error),
+        FileError(String),
+        InputError(String),
     }
 
     impl fmt::Display for NoteError {
@@ -87,6 +89,16 @@ pub mod note {
                 NoteError::UnwrapNoteError(e) => write!(f, "Couldn't unwrap note: {}", e),
                 NoteError::RustqliteError(e) => {
                     write!(f, "Rustqlite error while handling notes: {}", e)
+                }
+                NoteError::FileError(e) => {
+                    write!(
+                        f,
+                        "Error occured while trying to parse a note from a file: {}",
+                        e
+                    )
+                }
+                NoteError::InputError(e) => {
+                    write!(f, "Error while reading user input: {}", e)
                 }
             }
         }
