@@ -1,10 +1,13 @@
+use ansi_term::Style;
 use anyhow::Result;
 use db::*;
 use noted::note::NoteError;
 use noted::SortOrder;
 use rusqlite::Connection;
-use std::env;
+use std::fs::File;
 use std::io::{self, Write};
+use std::process::Command;
+use std::{env, fs};
 
 mod db;
 
@@ -25,7 +28,7 @@ fn main() -> Result<(), NoteError> {
     }
 
     if args.len() < 3 {
-        println!("Instructions!");
+        print_instructions();
     } else {
         match args[2].as_str() {
             "new" | "n" => {
@@ -78,10 +81,12 @@ fn handle_new(args: Vec<String>, conn: Connection) -> Result<(), NoteError> {
             "--file" | "-f" => {
                 if args.len() > 4 {
                     let filepath = &args[4];
+
                     let mut note_content = match read_file(filepath) {
                         Ok(note_content) => note_content,
                         Err(e) => return Err(NoteError::FileError(e.to_string())),
                     };
+
                     if !note_content.ends_with('\n') {
                         note_content.push('\n');
                     }
@@ -89,6 +94,48 @@ fn handle_new(args: Vec<String>, conn: Connection) -> Result<(), NoteError> {
                 } else {
                     println!("Provide the file as an argument, eg:");
                     println!("  noted new --file \"path-to-my-file.txt\"",);
+                }
+            }
+            "--gui" | "-g" => {
+                let output = Command::new("yad")
+                    .args([
+                        "--text-info",
+                        "--editable",
+                        "--wrap",
+                        "--show-uri",
+                        "--save-file",
+                        "--margins=10",
+                        "--show-uri",
+                        "--title=Noted - New Note",
+                        "--width=900",
+                        "--height=800",
+                        "--button=Cancel (Esc)!gtk-cancel:1",
+                        "--button=Submit (Ctrl+Enter)!gtk-ok:0",
+                    ])
+                    .output()
+                    .expect("Failed to execute yad command");
+
+                if output.status.success() {
+                    let mut file = File::create("new_note.txt").expect("Failed to create file");
+                    file.write_all(&output.stdout)
+                        .expect("Failed to write to file");
+
+                    let mut note_content = match read_file("new_note.txt") {
+                        Ok(note_content) => note_content,
+                        Err(e) => return Err(NoteError::FileError(e.to_string())),
+                    };
+
+                    if !note_content.ends_with('\n') {
+                        note_content.push('\n');
+                    }
+
+                    match create_new_note(conn, note_content) {
+                        Ok(()) => match fs::remove_file("new_note.txt") {
+                            Ok(()) => {}
+                            Err(e) => return Err(NoteError::FileError(e.to_string())),
+                        },
+                        Err(e) => return Err(NoteError::FileError(e.to_string())),
+                    };
                 }
             }
             _ => {
@@ -146,4 +193,17 @@ fn handle_delete(args: Vec<String>, conn: Connection) -> Result<(), NoteError> {
         }
     }
     Ok(())
+}
+
+fn print_instructions() {
+    println!("Create, read and manage quick notes");
+    println!("\nUsage: noted COMMAND [OPTIONS]");
+    println!("\n{}", Style::new().bold().paint("Commands:"));
+    println!("  new (n)\t\tCreate a new note");
+    println!("  all (a)\t\tView all notes");
+    println!("  last (l)\t\tView recent note(s)");
+    println!("  first (f)\t\tView oldest note(s)");
+    println!("  delete (d,rm,remove)\tDelete note(s)");
+    println!("  search (s)\t\tSearch for notes with certain keyword");
+    println!("\n{}", Style::new().bold().paint("New options:"));
 }
