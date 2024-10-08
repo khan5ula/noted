@@ -4,8 +4,6 @@ A terminal based application for creating, managing and reading quick notes.
 
 ## Usage
 
-Here's the table formatted properly in Markdown:
-
 | Command                    | Option      | Description                                                                                |
 | -------------------------- | ----------- | ------------------------------------------------------------------------------------------ |
 | **New (n)**                |             | Creates a new note from the command line arguments.<br>Eg. `noted n buy more coffee soon!` |
