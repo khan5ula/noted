@@ -34,7 +34,11 @@ pub fn read_file(path: &str) -> Result<String, NoteError> {
     }
 }
 
-pub fn create_new_note(conn: Connection, content: String) -> Result<(), NoteError> {
+pub fn create_new_note(conn: Connection, mut content: String) -> Result<(), NoteError> {
+    if !content.ends_with('\n') {
+        content.push('\n');
+    }
+
     let new_note = Note::new(content);
 
     match conn.execute(
