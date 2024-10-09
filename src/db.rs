@@ -34,11 +34,7 @@ pub fn read_file(path: &str) -> Result<String, NoteError> {
     }
 }
 
-pub fn create_new_note(conn: &Connection, mut content: String) -> Result<(), NoteError> {
-    if !content.ends_with('\n') {
-        content.push('\n');
-    }
-
+pub fn create_new_note(conn: &Connection, content: String) -> Result<(), NoteError> {
     let new_note = Note::new(content);
 
     match conn.execute(
@@ -61,6 +57,9 @@ pub fn print_notes(notes: Vec<Note>) {
 
     for note in notes {
         println!("{}", note);
+        if !note.get_content().ends_with('\n') {
+            println!("\n");
+        }
     }
 }
 
@@ -89,7 +88,7 @@ where
     Ok(result)
 }
 
-pub fn get_all_notes(conn: Connection) -> Result<Vec<Note>, NoteError> {
+pub fn get_all_notes(conn: &Connection) -> Result<Vec<Note>, NoteError> {
     let mut statement = match conn.prepare("SELECT id, content, date FROM note") {
         Ok(statement) => statement,
         Err(e) => return Err(NoteError::RustqliteError(e)),
@@ -106,7 +105,7 @@ pub fn get_all_notes(conn: Connection) -> Result<Vec<Note>, NoteError> {
 }
 
 pub fn get_notes_with_qty_and_order(
-    conn: Connection,
+    conn: &Connection,
     count: i32,
     order_by: SortOrder,
 ) -> Result<Vec<Note>, NoteError> {
@@ -130,7 +129,7 @@ pub fn get_notes_with_qty_and_order(
     note_iter_into_vec(note_iterator)
 }
 
-pub fn delete_note(conn: &Connection, id: String) -> Result<(), NoteError> {
+pub fn delete_note(conn: &Connection, id: String) -> Result<usize, NoteError> {
     let like_id = format!("{}%", id);
 
     match conn.execute("DELETE FROM note WHERE id LIKE ?", [like_id]) {
@@ -139,7 +138,8 @@ pub fn delete_note(conn: &Connection, id: String) -> Result<(), NoteError> {
                 "Deleted {} note(s) with ID starting with '{}'",
                 rows_deleted, id
             );
-            Ok(())
+
+            Ok(rows_deleted)
         }
         Err(e) => {
             println!(

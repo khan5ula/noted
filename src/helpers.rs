@@ -35,7 +35,7 @@ pub fn create_note_from_gui(conn: Connection) -> Result<(), NoteError> {
         file.write_all(&output.stdout)
             .expect("Failed to write to file");
 
-        let mut note_content = match read_file(&filename) {
+        let note_content = match read_file(&filename) {
             Ok(note_content) => note_content,
             Err(e) => {
                 return Err(NoteError::FileError(format!(
@@ -44,10 +44,6 @@ pub fn create_note_from_gui(conn: Connection) -> Result<(), NoteError> {
                 )))
             }
         };
-
-        if !note_content.ends_with('\n') {
-            note_content.push('\n');
-        }
 
         match create_new_note(&conn, note_content) {
                         Ok(()) => match fs::remove_file(filename) {

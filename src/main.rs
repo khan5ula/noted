@@ -53,17 +53,17 @@ fn main() -> Result<(), NoteError> {
         }
 
         Commands::All => {
-            let notes = get_all_notes(conn)?;
+            let notes = get_all_notes(&conn)?;
             print_notes(notes);
         }
 
         Commands::Last { count } => {
-            let notes = get_notes_with_qty_and_order(conn, count, SortOrder::Desc)?;
+            let notes = get_notes_with_qty_and_order(&conn, count, SortOrder::Desc)?;
             print_notes(notes);
         }
 
         Commands::First { count } => {
-            let notes = get_notes_with_qty_and_order(conn, count, SortOrder::Asc)?;
+            let notes = get_notes_with_qty_and_order(&conn, count, SortOrder::Asc)?;
             print_notes(notes);
         }
 
@@ -153,5 +153,30 @@ mod tests {
                 "Creating a second note should not fail"
             );
         }
+
+        {
+            // Test getting the first note
+            let mut result = get_notes_with_qty_and_order(&conn, 1, SortOrder::Asc).unwrap();
+            let note = result.pop();
+            if let Some(n) = note {
+                assert_eq!(first_note, n.get_content());
+            }
+        }
+
+        // Test getting the second note
+        let mut result = get_notes_with_qty_and_order(&conn, 1, SortOrder::Desc).unwrap();
+        let note = result.pop();
+        if let Some(n) = note {
+            assert_eq!(first_note, n.get_content());
+
+            // Test deleting the note
+            let id = String::from(n.get_id());
+            let deletion_result = delete_note(&conn, id).unwrap();
+            assert_eq!(1, deletion_result);
+        }
+
+        // There should now be only one note in the db
+        result = get_all_notes(&conn).unwrap();
+        assert_eq!(1, result.len());
     }
 }
