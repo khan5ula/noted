@@ -69,12 +69,21 @@ fn main() -> Result<(), NoteError> {
 
         Commands::Delete { id, all } => {
             if all {
-                match conn.execute("DROP TABLE IF EXISTS note", ()) {
-                    Ok(_) => Ok(())?,
-                    Err(e) => Err(NoteError::RustqliteError(e))?,
-                }
-            } else {
-                handle_delete(id, conn)?;
+                let prompt = "Are you sure you want to remove all notes?";
+                let answer = read_y_or_no_input(prompt)?;
+                match answer {
+                    'y' => delete_all_notes(&conn)?,
+                    _ => {
+                        println!("Aborting");
+                        return Ok(());
+                    }
+                };
+            } else if let Some(to_be_deleted) = id {
+                let count = delete_note(&conn, &to_be_deleted)?;
+                println!(
+                    "Deleted {} note(s) with ID starting with '{}'",
+                    count, to_be_deleted
+                );
             }
         }
 
@@ -171,12 +180,14 @@ mod tests {
 
             // Test deleting the note
             let id = String::from(n.get_id());
-            let deletion_result = delete_note(&conn, id).unwrap();
+            let deletion_result = delete_note(&conn, &id).unwrap();
             assert_eq!(1, deletion_result);
         }
 
         // There should now be only one note in the db
         result = get_all_notes(&conn).unwrap();
         assert_eq!(1, result.len());
+
+        //TODO:  Test clearing the database
     }
 }

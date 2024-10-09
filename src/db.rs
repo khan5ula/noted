@@ -129,18 +129,11 @@ pub fn get_notes_with_qty_and_order(
     note_iter_into_vec(note_iterator)
 }
 
-pub fn delete_note(conn: &Connection, id: String) -> Result<usize, NoteError> {
+pub fn delete_note(conn: &Connection, id: &String) -> Result<usize, NoteError> {
     let like_id = format!("{}%", id);
 
     match conn.execute("DELETE FROM note WHERE id LIKE ?", [like_id]) {
-        Ok(rows_deleted) => {
-            println!(
-                "Deleted {} note(s) with ID starting with '{}'",
-                rows_deleted, id
-            );
-
-            Ok(rows_deleted)
-        }
+        Ok(rows_deleted) => Ok(rows_deleted),
         Err(e) => {
             println!(
                 "Couldn't remove a note with given id: '{}' due to: {}",
@@ -148,6 +141,13 @@ pub fn delete_note(conn: &Connection, id: String) -> Result<usize, NoteError> {
             );
             Err(NoteError::RustqliteError(e))
         }
+    }
+}
+
+pub fn delete_all_notes(conn: &Connection) -> Result<(), NoteError> {
+    match conn.execute("DROP TABLE note", ()) {
+        Ok(_) => Ok(()),
+        Err(e) => Err(NoteError::RustqliteError(e)),
     }
 }
 
