@@ -15,6 +15,7 @@ A terminal based application for creating, managing and reading quick notes.
 | **First (f)**              |             | View the oldest note                                                                       |
 | **First (f)**              | `$NUMBER`   | View `$NUMBER` of oldest notes                                                             |
 | **Delete (d, rm, remove)** | `$ID`       | Remove notes with a matching ID or start of an ID                                          |
+| **Delete (d, rm, remove)** | `$ID`       | Remove notes with a matching ID or start of an ID                                          |
 | **Search (s)**             | `$STRING`   | View notes that contain the given `$STRING`                                                |
 
 ## Dependencies

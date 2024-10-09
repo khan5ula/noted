@@ -15,8 +15,10 @@ pub fn create_note_from_gui(conn: Connection) -> Result<(), NoteError> {
             "--wrap",
             "--show-uri",
             "--save-file",
-            "--margins=10",
+            "--margins=20",
             "--show-uri",
+            "--indent",
+            "--brackets",
             "--title=Noted - New Note",
             "--width=900",
             "--height=800",
@@ -47,7 +49,7 @@ pub fn create_note_from_gui(conn: Connection) -> Result<(), NoteError> {
             note_content.push('\n');
         }
 
-        match create_new_note(conn, note_content) {
+        match create_new_note(&conn, note_content) {
                         Ok(()) => match fs::remove_file(filename) {
                             Ok(()) => {}
                             Err(e) => return Err(NoteError::FileError(format!("Failed to remove the temporary file used when creating a new note from GUI: {}", e))),

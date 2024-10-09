@@ -34,7 +34,7 @@ pub fn read_file(path: &str) -> Result<String, NoteError> {
     }
 }
 
-pub fn create_new_note(conn: Connection, mut content: String) -> Result<(), NoteError> {
+pub fn create_new_note(conn: &Connection, mut content: String) -> Result<(), NoteError> {
     if !content.ends_with('\n') {
         content.push('\n');
     }
@@ -54,18 +54,27 @@ pub fn create_new_note(conn: Connection, mut content: String) -> Result<(), Note
     }
 }
 
-fn print_notes<I>(iterator: I) -> Result<(), NoteError>
+pub fn print_notes(notes: Vec<Note>) {
+    if notes.is_empty() {
+        println!("No notes to display");
+    }
+
+    for note in notes {
+        println!("{}", note);
+    }
+}
+
+fn note_iter_into_vec<I>(iterator: I) -> Result<Vec<Note>, NoteError>
 where
     I: IntoIterator<Item = Result<Result<Note, String>, Error>>,
 {
-    let mut notes_found = false;
+    let mut result: Vec<Note> = vec![];
 
     for iter_result in iterator {
         match iter_result {
             Ok(note_result) => match note_result {
                 Ok(note) => {
-                    notes_found = true;
-                    println!("{}", note);
+                    result.push(note);
                 }
                 Err(e) => {
                     return Err(NoteError::UnwrapNoteError(e));
@@ -77,14 +86,10 @@ where
         }
     }
 
-    if !notes_found {
-        println!("No notes to display");
-    }
-
-    Ok(())
+    Ok(result)
 }
 
-pub fn get_all_notes(conn: Connection) -> Result<(), NoteError> {
+pub fn get_all_notes(conn: Connection) -> Result<Vec<Note>, NoteError> {
     let mut statement = match conn.prepare("SELECT id, content, date FROM note") {
         Ok(statement) => statement,
         Err(e) => return Err(NoteError::RustqliteError(e)),
@@ -97,10 +102,14 @@ pub fn get_all_notes(conn: Connection) -> Result<(), NoteError> {
         Err(e) => return Err(NoteError::IterationError(e)),
     };
 
-    print_notes(note_iterator)
+    note_iter_into_vec(note_iterator)
 }
 
-pub fn get_some_notes(conn: Connection, count: i32, order_by: SortOrder) -> Result<(), NoteError> {
+pub fn get_notes_with_qty_and_order(
+    conn: Connection,
+    count: i32,
+    order_by: SortOrder,
+) -> Result<Vec<Note>, NoteError> {
     let query = format!(
         "SELECT id, content, date FROM note ORDER BY date {} LIMIT ?1",
         order_by.as_str()
@@ -118,7 +127,7 @@ pub fn get_some_notes(conn: Connection, count: i32, order_by: SortOrder) -> Resu
         Err(e) => return Err(NoteError::IterationError(e)),
     };
 
-    print_notes(note_iterator)
+    note_iter_into_vec(note_iterator)
 }
 
 pub fn delete_note(conn: &Connection, id: String) -> Result<(), NoteError> {
@@ -142,7 +151,7 @@ pub fn delete_note(conn: &Connection, id: String) -> Result<(), NoteError> {
     }
 }
 
-pub fn find_notes(conn: &Connection, needle: String) -> Result<(), NoteError> {
+pub fn find_notes(conn: &Connection, needle: String) -> Result<Vec<Note>, NoteError> {
     let query = "SELECT id, content, date FROM note WHERE content LIKE ?";
     let search_with_wildcards = format!("%{}%", needle);
 
@@ -158,5 +167,5 @@ pub fn find_notes(conn: &Connection, needle: String) -> Result<(), NoteError> {
         Err(e) => return Err(NoteError::IterationError(e)),
     };
 
-    print_notes(note_iterator)
+    note_iter_into_vec(note_iterator)
 }

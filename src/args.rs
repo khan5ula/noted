@@ -84,9 +84,11 @@ pub enum Commands {
     Delete {
         #[arg(
             help = "ID of the note to delete",
-            long_help = "Delete note(s) by providing a note ID. You can also use the beginning of an ID, eg. f1a8. The command removes all notes with a matching start of an ID."
+            long_help = "Delete note(s) by providing a note ID. You can also use the beginning of an ID, eg. f1a8. The command removes all notes with a matching start of an ID. All notes can be deleted with option --all (-a)"
         )]
         id: String,
+        #[arg(short = 'a', help = "Delete all notes")]
+        all: bool,
     },
 
     /// Search for a note
