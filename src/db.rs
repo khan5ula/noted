@@ -1,10 +1,13 @@
+use crate::{note_iter_into_vec, read_file};
+use chrono::Local;
 use noted::note::Note;
 use noted::note::NoteError;
 use noted::SortOrder;
 use rusqlite::Connection;
-use rusqlite::Error;
+use std::fs;
 use std::fs::File;
-use std::io::Read;
+use std::io::Write;
+use std::process::Command;
 
 pub fn create_table(conn: &Connection) -> Result<(), NoteError> {
     match conn.execute(
@@ -17,20 +20,6 @@ pub fn create_table(conn: &Connection) -> Result<(), NoteError> {
     ) {
         Ok(_) => Ok(()),
         Err(e) => Err(NoteError::RustqliteError(e)),
-    }
-}
-
-pub fn read_file(path: &str) -> Result<String, NoteError> {
-    let mut file = match File::open(path) {
-        Ok(file) => file,
-        Err(e) => return Err(NoteError::FileError(e.to_string())),
-    };
-
-    let mut file_content = String::new();
-
-    match file.read_to_string(&mut file_content) {
-        Ok(_) => Ok(file_content),
-        Err(e) => Err(NoteError::FileError(e.to_string())),
     }
 }
 
@@ -50,42 +39,49 @@ pub fn create_new_note(conn: &Connection, content: String) -> Result<(), NoteErr
     }
 }
 
-pub fn print_notes(notes: Vec<Note>) {
-    if notes.is_empty() {
-        println!("No notes to display");
-    }
+pub fn create_note_from_gui(conn: Connection) -> Result<(), NoteError> {
+    let output = Command::new("yad")
+        .args([
+            "--text-info",
+            "--editable",
+            "--wrap",
+            "--show-uri",
+            "--save-file",
+            "--margins=20",
+            "--show-uri",
+            "--indent",
+            "--brackets",
+            "--title=Noted - New Note",
+            "--width=900",
+            "--height=800",
+            "--button=Cancel (Esc)!gtk-cancel:1",
+            "--button=Submit (Ctrl+Enter)!gtk-ok:0",
+        ])
+        .output()
+        .expect("Failed to execute yad command");
 
-    for note in notes {
-        println!("{}", note);
-        if !note.get_content().ends_with('\n') {
-            println!("\n");
-        }
-    }
-}
+    if output.status.success() {
+        let filename = format!("/tmp/noted_new_note_{}", Local::now().timestamp());
+        let mut file = File::create(&filename).expect("Failed to create file");
 
-fn note_iter_into_vec<I>(iterator: I) -> Result<Vec<Note>, NoteError>
-where
-    I: IntoIterator<Item = Result<Result<Note, String>, Error>>,
-{
-    let mut result: Vec<Note> = vec![];
+        file.write_all(&output.stdout)
+            .expect("Failed to write to file");
 
-    for iter_result in iterator {
-        match iter_result {
-            Ok(note_result) => match note_result {
-                Ok(note) => {
-                    result.push(note);
-                }
-                Err(e) => {
-                    return Err(NoteError::UnwrapNoteError(e));
-                }
-            },
+        let note_content = match read_file(&filename) {
+            Ok(note_content) => note_content,
             Err(e) => {
-                return Err(NoteError::IterationError(e));
+                return Err(NoteError::FileError(format!(
+                    "Failed to read note from a file: {}",
+                    e
+                )))
             }
-        }
+        };
+
+        create_new_note(&conn, note_content)?;
+        fs::remove_file(filename).map_err(|e| NoteError::FileError(e.to_string()))?
     }
 
-    Ok(result)
+    Ok(())
 }
 
 pub fn get_all_notes(conn: &Connection) -> Result<Vec<Note>, NoteError> {
