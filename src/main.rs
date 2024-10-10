@@ -1,9 +1,6 @@
 use clap::Parser;
 use noted::note::NoteError;
 use noted::SortOrder;
-use rusqlite::Connection;
-use std::env;
-use std::path::PathBuf;
 
 mod args;
 mod db;
@@ -14,28 +11,13 @@ use db::*;
 use helpers::*;
 
 fn main() -> Result<(), NoteError> {
-    let cwd = env::current_dir().unwrap();
-    let home_dir = env::var("HOME").expect("Could not get $HOME directory");
-    let db_path = PathBuf::from(home_dir).join(".local/share/noted/notes.db");
-
-    let conn = match Connection::open(cwd.join(db_path)) {
-        Ok(conn) => conn,
-        Err(e) => return Err(NoteError::RustqliteError(e)),
-    };
-
-    match create_table(&conn) {
-        Ok(_) => {}
-        Err(e) => {
-            eprintln!("Couldn't initialize the database: {}", e);
-        }
-    }
-
+    let conn = init_db()?;
     let args = NotedArgs::parse();
 
     match args.command {
         Commands::New { content, file, gui } => {
             if let Some(file) = file {
-                let note_content = match read_file(&file) {
+                let note_content = match read_file_to_string(&file) {
                     Ok(note_content) => note_content,
                     Err(e) => return Err(NoteError::FileError(e.to_string())),
                 };
@@ -102,7 +84,16 @@ fn main() -> Result<(), NoteError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use noted::note::NoteError;
+    use noted::SortOrder;
+    use rusqlite::Connection;
+    use std::env;
     use std::fs;
+    use std::fs::File;
+    use std::io::BufRead;
+    use std::io::BufReader;
+    use std::path::Path;
+    use std::path::PathBuf;
 
     struct TestDb {
         path: PathBuf,
@@ -126,10 +117,26 @@ mod tests {
         }
     }
 
+    pub fn read_file_to_vector(path: PathBuf) -> Result<Vec<String>, NoteError> {
+        let file = match File::open(path) {
+            Ok(file) => file,
+            Err(e) => return Err(NoteError::FileError(e.to_string())),
+        };
+
+        let buf = BufReader::new(file);
+
+        buf.lines()
+            .map(|l| l.map_err(|e| NoteError::FileError(e.to_string())))
+            .collect()
+    }
+
     #[test]
     fn test_database_basics() {
-        let home_dir = env::var("HOME").expect("Could not get $HOME directory");
-        let db_path = PathBuf::from(home_dir).join(".local/share/noted/notes_test.db");
+        let home_dir = env::var("HOME");
+        assert!(home_dir.is_ok(), "Failed to get HOME environment variable");
+
+        let db_path =
+            PathBuf::from(home_dir.unwrap()).join(".local/share/noted/notes_basic_test.db");
 
         let test_db = TestDb::new(db_path);
 
@@ -205,5 +212,36 @@ mod tests {
         assert_eq!(1, deleted_rows);
         let all_notes_after_reset = get_all_notes(&conn).unwrap();
         assert_eq!(0, all_notes_after_reset.len());
+    }
+
+    #[test]
+    fn test_large_noteset() {
+        let home_dir = env::var("HOME").expect("Could not get $HOME directory");
+        let db_path =
+            PathBuf::from(home_dir).join(".local/share/noted/notes_large_dataset_test.db");
+        let test_db = TestDb::new(db_path);
+        let conn = test_db.conn();
+        let file_path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/resources/large_noteset_data.txt");
+        let dataset = read_file_to_vector(file_path).unwrap();
+
+        create_table(&conn).unwrap();
+
+        for quote in dataset {
+            create_new_note(&conn, quote).unwrap();
+        }
+
+        let all_notes_from_db = get_all_notes(&conn).unwrap();
+
+        assert!(
+            all_notes_from_db.len() > 50,
+            "There should be at least 50 notes in the db"
+        );
+
+        let found_notes = search_notes(&conn, "what".to_string()).unwrap();
+        assert!(
+            found_notes.len() >= 4,
+            "There are surely at least 4 notes with the substring 'what'"
+        );
     }
 }

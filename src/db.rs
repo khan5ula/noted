@@ -1,13 +1,29 @@
-use crate::{note_iter_into_vec, read_file};
+use crate::{note_iter_into_vec, read_file_to_string};
 use chrono::Local;
 use noted::note::Note;
 use noted::note::NoteError;
 use noted::SortOrder;
 use rusqlite::Connection;
+use std::env;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 use std::process::Command;
+
+pub fn init_db() -> Result<Connection, NoteError> {
+    let cwd = env::current_dir().unwrap();
+    let home_dir = env::var("HOME").expect("Could not get $HOME directory");
+    let db_path = PathBuf::from(home_dir).join(".local/share/noted/notes.db");
+
+    let conn = match Connection::open(cwd.join(db_path)) {
+        Ok(conn) => conn,
+        Err(e) => return Err(NoteError::RustqliteError(e)),
+    };
+
+    create_table(&conn)?;
+    Ok(conn)
+}
 
 pub fn create_table(conn: &Connection) -> Result<(), NoteError> {
     match conn.execute(
@@ -67,7 +83,7 @@ pub fn create_note_from_gui(conn: Connection) -> Result<(), NoteError> {
         file.write_all(&output.stdout)
             .expect("Failed to write to file");
 
-        let note_content = match read_file(&filename) {
+        let note_content = match read_file_to_string(&filename) {
             Ok(note_content) => note_content,
             Err(e) => {
                 return Err(NoteError::FileError(format!(

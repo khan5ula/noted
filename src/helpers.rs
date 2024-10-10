@@ -35,7 +35,7 @@ pub fn read_y_or_no_input(prompt: &str) -> Result<char, NoteError> {
     }
 }
 
-pub fn read_file(path: &str) -> Result<String, NoteError> {
+pub fn read_file_to_string(path: &str) -> Result<String, NoteError> {
     let mut file = match File::open(path) {
         Ok(file) => file,
         Err(e) => return Err(NoteError::FileError(e.to_string())),

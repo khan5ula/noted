@@ -91,11 +91,7 @@ pub mod note {
                     write!(f, "Rustqlite error while handling notes: {}", e)
                 }
                 NoteError::FileError(e) => {
-                    write!(
-                        f,
-                        "Error occured while trying to parse a note from a file: {}",
-                        e
-                    )
+                    write!(f, "Error occured while trying to parse a file: {}", e)
                 }
                 NoteError::InputError(e) => {
                     write!(f, "Error while reading user input: {}", e)
