@@ -1,8 +1,8 @@
-use crate::{note_iter_into_vec, read_file_to_string};
+use crate::helpers::{note_iter_into_vec, read_file_to_string};
+use crate::note::Note;
+use crate::note::NoteError;
+use crate::SortOrder;
 use chrono::Local;
-use noted::note::Note;
-use noted::note::NoteError;
-use noted::SortOrder;
 use rusqlite::Connection;
 use std::env;
 use std::fs;
@@ -28,10 +28,10 @@ pub fn init_db() -> Result<Connection, NoteError> {
 pub fn create_table(conn: &Connection) -> Result<(), NoteError> {
     match conn.execute(
         "CREATE TABLE IF NOT EXISTS note (
-            id TEXT PRIMARY KEY,
-            content TEXT NOT NULL,
-            date  NUMBER NOT NULL
-            )",
+                    id TEXT PRIMARY KEY,
+                    content TEXT NOT NULL,
+                    date  NUMBER NOT NULL
+                    )",
         (),
     ) {
         Ok(_) => Ok(()),
@@ -55,7 +55,7 @@ pub fn create_new_note(conn: &Connection, content: String) -> Result<(), NoteErr
     }
 }
 
-pub fn create_note_from_gui(conn: Connection) -> Result<(), NoteError> {
+pub fn create_note_from_gui(conn: &Connection) -> Result<(), NoteError> {
     let output = Command::new("yad")
         .args([
             "--text-info",
@@ -93,7 +93,7 @@ pub fn create_note_from_gui(conn: Connection) -> Result<(), NoteError> {
             }
         };
 
-        create_new_note(&conn, note_content)?;
+        create_new_note(conn, note_content)?;
         fs::remove_file(filename).map_err(|e| NoteError::FileError(e.to_string()))?
     }
 
@@ -163,7 +163,7 @@ pub fn delete_all_notes(conn: &Connection) -> Result<usize, NoteError> {
     }
 }
 
-pub fn search_notes(conn: &Connection, needle: String) -> Result<Vec<Note>, NoteError> {
+pub fn search_notes_by_content(conn: &Connection, needle: &String) -> Result<Vec<Note>, NoteError> {
     let query = "SELECT id, content, date FROM note WHERE content LIKE ?";
     let search_with_wildcards = format!("%{}%", needle);
 
@@ -180,4 +180,101 @@ pub fn search_notes(conn: &Connection, needle: String) -> Result<Vec<Note>, Note
     };
 
     note_iter_into_vec(note_iterator)
+}
+
+pub fn search_notes_by_id(conn: &Connection, id: &String) -> Result<Vec<Note>, NoteError> {
+    let like_id = format!("{}%", id);
+    let query = "SELECT id, content, date FROM note WHERE id LIKE ?";
+
+    let mut statement = match conn.prepare(query) {
+        Ok(statement) => statement,
+        Err(e) => return Err(NoteError::RustqliteError(e)),
+    };
+
+    let note_iterator = match statement.query_map([like_id], |row| {
+        Ok(Note::from_db(row.get(0)?, row.get(1)?, row.get(2)?))
+    }) {
+        Ok(iterator) => iterator,
+        Err(e) => return Err(NoteError::IterationError(e)),
+    };
+
+    note_iter_into_vec(note_iterator)
+}
+
+pub fn edit_note_with_gui(
+    conn: &Connection,
+    note_to_edit_path: &String,
+    id: &String,
+) -> Result<usize, NoteError> {
+    let output = Command::new("yad")
+        .args([
+            "--text-info",
+            "--editable",
+            "--wrap",
+            "--show-uri",
+            "--save-file",
+            "--margins=20",
+            "--show-uri",
+            "--indent",
+            "--brackets",
+            "--title=Noted - New Note",
+            "--width=900",
+            "--height=800",
+            "--button=Cancel (Esc)!gtk-cancel:1",
+            "--button=Submit (Ctrl+Enter)!gtk-ok:0",
+            format!("--filename={}", note_to_edit_path).as_str(),
+        ])
+        .output()
+        .expect("Failed to execute yad command");
+
+    if output.status.success() {
+        let new_content_filepath = format!("/tmp/noted_new_note_{}", Local::now().timestamp());
+        let mut file = File::create(&new_content_filepath).expect("Failed to create file");
+
+        file.write_all(&output.stdout)
+            .expect("Failed to write to file");
+
+        let note_content = match read_file_to_string(&new_content_filepath) {
+            Ok(note_content) => note_content,
+            Err(e) => {
+                return Err(NoteError::FileError(format!(
+                    "Failed to read note from a file: {}",
+                    e
+                )))
+            }
+        };
+
+        fs::remove_file(new_content_filepath).map_err(|e| NoteError::FileError(e.to_string()))?;
+        fs::remove_file(note_to_edit_path).map_err(|e| NoteError::FileError(e.to_string()))?;
+        edit_note(conn, id, &note_content)?;
+    }
+
+    Err(NoteError::FileError("Failed to edit a note".to_string()))
+}
+
+pub fn edit_note(conn: &Connection, id: &String, content: &String) -> Result<usize, NoteError> {
+    let like_id = format!("{}%", id);
+
+    match conn.execute(
+        "UPDATE note SET content = ?1 WHERE id LIKE ?2",
+        [content, &like_id],
+    ) {
+        Ok(rows_edited) => Ok(rows_edited),
+        Err(e) => {
+            println!("Couldn't edit a note with given id: '{}' due to: {}", id, e);
+            Err(NoteError::RustqliteError(e))
+        }
+    }
+}
+
+pub fn handle_edit_note(conn: &Connection, note: &Note) -> Result<usize, NoteError> {
+    let filename = format!("/tmp/noted_note_to_edit_{}", Local::now().timestamp());
+    let mut file = File::create(&filename).expect("Failed to create file");
+    let buf = note.get_content().as_bytes();
+
+    file.write_all(buf).expect("Failed to write to file");
+
+    let id = note.get_id().to_string();
+
+    edit_note_with_gui(conn, &filename, &id)
 }

@@ -1,5 +1,5 @@
-use noted::note::Note;
-use noted::note::NoteError;
+use crate::note::Note;
+use crate::note::NoteError;
 use rusqlite::Error;
 use std::fs::File;
 use std::io::Read;
