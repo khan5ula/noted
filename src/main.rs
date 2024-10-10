@@ -72,7 +72,10 @@ fn main() -> Result<(), NoteError> {
                 let prompt = "Are you sure you want to remove all notes?";
                 let answer = read_y_or_no_input(prompt)?;
                 match answer {
-                    'y' => delete_all_notes(&conn)?,
+                    'y' => {
+                        let count = delete_all_notes(&conn)?;
+                        println!("Deleted {} notes", count);
+                    }
                     _ => {
                         println!("Aborting");
                         return Ok(());
@@ -88,7 +91,8 @@ fn main() -> Result<(), NoteError> {
         }
 
         Commands::Search { term } => {
-            find_notes(&conn, term)?;
+            let notes = search_notes(&conn, term)?;
+            print_notes(notes)
         }
     }
 
@@ -174,9 +178,17 @@ mod tests {
 
         // Test getting the second note
         let mut result = get_notes_with_qty_and_order(&conn, 1, SortOrder::Desc).unwrap();
-        let note = result.pop();
+        let mut note = result.pop();
         if let Some(n) = note {
             assert_eq!(first_note, n.get_content());
+
+            // Test searching for a note
+            result = search_notes(&conn, "escape".to_string()).unwrap();
+            assert_eq!(1, result.len());
+            note = result.pop();
+            if let Some(n) = note {
+                assert!(n.get_content().contains("spasmodic involuntary action"));
+            }
 
             // Test deleting the note
             let id = String::from(n.get_id());
@@ -188,6 +200,10 @@ mod tests {
         result = get_all_notes(&conn).unwrap();
         assert_eq!(1, result.len());
 
-        //TODO:  Test clearing the database
+        // Test clearing the database
+        let deleted_rows = delete_all_notes(&conn).unwrap();
+        assert_eq!(1, deleted_rows);
+        let all_notes_after_reset = get_all_notes(&conn).unwrap();
+        assert_eq!(0, all_notes_after_reset.len());
     }
 }

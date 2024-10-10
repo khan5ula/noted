@@ -144,14 +144,14 @@ pub fn delete_note(conn: &Connection, id: &String) -> Result<usize, NoteError> {
     }
 }
 
-pub fn delete_all_notes(conn: &Connection) -> Result<(), NoteError> {
-    match conn.execute("DROP TABLE note", ()) {
-        Ok(_) => Ok(()),
+pub fn delete_all_notes(conn: &Connection) -> Result<usize, NoteError> {
+    match conn.execute("DELETE FROM note", ()) {
+        Ok(count) => Ok(count),
         Err(e) => Err(NoteError::RustqliteError(e)),
     }
 }
 
-pub fn find_notes(conn: &Connection, needle: String) -> Result<Vec<Note>, NoteError> {
+pub fn search_notes(conn: &Connection, needle: String) -> Result<Vec<Note>, NoteError> {
     let query = "SELECT id, content, date FROM note WHERE content LIKE ?";
     let search_with_wildcards = format!("%{}%", needle);
 
