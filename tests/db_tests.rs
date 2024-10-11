@@ -11,6 +11,7 @@ mod tests {
     use std::io::BufReader;
     use std::path::Path;
     use std::path::PathBuf;
+    use std::{thread, time};
     use uuid::Uuid;
 
     struct TestDb {
@@ -230,6 +231,10 @@ mod tests {
             .to_string()
             .replace("Tomorrow", "Now");
 
+        // Wait for a second to give the timestamp chance to update
+        let sec = time::Duration::from_millis(1200);
+        thread::sleep(sec);
+
         let edited_rows = edit_note(&conn, &id, &content).unwrap();
 
         assert_eq!(1, edited_rows, "Editing should result in 1 updated row");
@@ -251,7 +256,7 @@ mod tests {
 
         assert!(
             third_note.get_date() < updated_third_note.get_date(),
-            "The date should have been changed"
+            "The date should have been updated"
         );
     }
 }
