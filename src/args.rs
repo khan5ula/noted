@@ -107,6 +107,8 @@ pub enum Commands {
         term: String,
     },
 
+    /// Edit note (e)
+    #[command(alias = "e")]
     Edit {
         #[arg(
             help = "ID of the note to edit",
