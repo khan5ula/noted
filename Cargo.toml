@@ -15,3 +15,4 @@ chrono = "0.4.38"
 ansi_term = "0.12.1"
 clap = { version = "4.5.19", features = ["derive"] }
 thiserror = "1.0.64"
+tempfile = "3.13.0"
