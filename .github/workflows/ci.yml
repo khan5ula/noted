@@ -21,5 +21,5 @@ jobs:
       - uses: actions/checkout@v4
       - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - run: cargo build --verbose
-      - run: bash .github/init_db_dir.sh
+      - run: bash ./.github/init_db_dir.sh
       - run: cargo test --verbose
