@@ -51,7 +51,7 @@ pub fn create_new_note(conn: &Connection, content: String) -> Result<(), NoteErr
         ),
     ) {
         Ok(_) => Ok(()),
-        Err(_) => todo!(),
+        Err(e) => Err(NoteError::RustqliteError(e)),
     }
 }
 
@@ -247,6 +247,9 @@ pub fn edit_note_with_gui(
         fs::remove_file(new_content_filepath).map_err(|e| NoteError::FileError(e.to_string()))?;
         fs::remove_file(note_to_edit_path).map_err(|e| NoteError::FileError(e.to_string()))?;
         edit_note(conn, id, &note_content)?;
+    } else {
+        // Ensure the note to edit tmp file is removed if the yad operation is cancelled
+        fs::remove_file(note_to_edit_path).map_err(|e| NoteError::FileError(e.to_string()))?;
     }
 
     Err(NoteError::FileError("Failed to edit a note".to_string()))
@@ -254,10 +257,11 @@ pub fn edit_note_with_gui(
 
 pub fn edit_note(conn: &Connection, id: &String, content: &String) -> Result<usize, NoteError> {
     let like_id = format!("{}%", id);
+    let updated_timestamp = Note::create_new_timestamp().to_string();
 
     match conn.execute(
-        "UPDATE note SET content = ?1 WHERE id LIKE ?2",
-        [content, &like_id],
+        "UPDATE note SET content = ?1, date = ?2 WHERE id LIKE ?3",
+        [content, &updated_timestamp, &like_id],
     ) {
         Ok(rows_edited) => Ok(rows_edited),
         Err(e) => {

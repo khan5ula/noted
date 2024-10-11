@@ -63,7 +63,7 @@ pub enum Commands {
     )]
     All,
 
-    /// View newest notes
+    /// View newest notes (l)
     #[command(alias = "l")]
     Last {
         /// Number of recent notes to view (default is 1)
@@ -75,7 +75,7 @@ pub enum Commands {
         count: i32,
     },
 
-    /// View oldest notes
+    /// View oldest notes (f)
     #[command(alias = "f")]
     First {
         /// Number of oldest notes to view (default is 1)
@@ -87,7 +87,7 @@ pub enum Commands {
         count: i32,
     },
 
-    /// Delete a note by ID
+    /// Delete a note by ID (d, rm, remove)
     #[command(aliases = ["d", "rm", "remove"])]
     Delete {
         #[arg(
@@ -100,15 +100,13 @@ pub enum Commands {
         all: bool,
     },
 
-    /// Search for a note
+    /// Search for a note (s)
     #[command(alias = "s")]
     Search {
         #[arg(help = "Search term to find notes")]
         term: String,
     },
 
-    /// Edit a note by ID
-    #[command(alias = "e")]
     Edit {
         #[arg(
             help = "ID of the note to edit",

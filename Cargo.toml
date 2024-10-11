@@ -2,6 +2,7 @@
 name = "noted"
 version = "0.1.0"
 edition = "2021"
+description = "A (mostly) terminal based application for creating, reading and managing quick notes"
 
 [dependencies]
 uuid = { version = "1.10.0", features = [

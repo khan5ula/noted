@@ -1,6 +1,6 @@
 # Noted
 
-A terminal based application for creating, managing and reading quick notes.
+A (mostly) terminal based application for creating, reading and managing quick notes. Hit `noted n` and store your note quickly and get back to it whenever you want. Alternatively, provide the note with a YAD-based graphical editor using the `-g` option.
 
 ## Usage
 
@@ -17,6 +17,7 @@ A terminal based application for creating, managing and reading quick notes.
 | **Delete (d, rm, remove)** | `$ID`        | Remove notes with a matching ID or start of an ID                                          |
 | **Delete (d, rm, remove)** | `--all` `-a` | Remove all notes                                                                           |
 | **Search (s)**             | `$STRING`    | View notes that contain the given `$STRING`                                                |
+| **Edit (e)**               | `$ID`        | Edit note with the given ID. Requires GUI.                                                 |
 
 ## Dependencies
 

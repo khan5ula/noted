@@ -35,7 +35,7 @@ mod tests {
         }
     }
 
-    pub fn read_file_to_vector(path: PathBuf) -> Result<Vec<String>, NoteError> {
+    fn read_file_to_vector(path: PathBuf) -> Result<Vec<String>, NoteError> {
         let file = match File::open(path) {
             Ok(file) => file,
             Err(e) => return Err(NoteError::FileError(e.to_string())),
@@ -48,18 +48,19 @@ mod tests {
             .collect()
     }
 
+    fn init_test_db(db_name: &str) -> TestDb {
+        let home_dir = env::var("HOME").expect("Could not get $HOME directory");
+        let path = format!(".local/share/noted/{}", db_name);
+        let db_path = PathBuf::from(home_dir).join(path);
+        TestDb::new(db_path)
+    }
+
     #[test]
     fn test_database_basics() {
-        let home_dir = env::var("HOME");
-        assert!(home_dir.is_ok(), "Failed to get HOME environment variable");
-
-        let db_path =
-            PathBuf::from(home_dir.unwrap()).join(".local/share/noted/notes_basic_test.db");
-
-        let test_db = TestDb::new(db_path);
-
-        // Test the connection to the database
+        let db_name = "notes_basic_test.db";
+        let test_db = init_test_db(db_name);
         let conn = test_db.conn();
+
         assert!(
             conn.is_autocommit(),
             "Connection should be in autocommit mode"
@@ -135,10 +136,8 @@ mod tests {
 
     #[test]
     fn test_large_noteset() {
-        let home_dir = env::var("HOME").expect("Could not get $HOME directory");
-        let db_path =
-            PathBuf::from(home_dir).join(".local/share/noted/notes_large_dataset_test.db");
-        let test_db = TestDb::new(db_path);
+        let db_name = "notes_large_dataset_test.db";
+        let test_db = init_test_db(db_name);
         let conn = test_db.conn();
         let file_path =
             Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/resources/large_noteset_data.txt");
@@ -172,5 +171,87 @@ mod tests {
         let invalid_id = String::from("6666666");
         let deletion_result = delete_note(&conn, &invalid_id).unwrap();
         assert_eq!(0, deletion_result, "Delete operation with invalid ID should not cause errors, but should not find anything to delete either");
+
+        let deleted_rows = delete_all_notes(&conn).unwrap();
+        assert!(
+            deleted_rows > 50,
+            "at least 50 notes should have been deleted",
+        );
+
+        let notes_in_empty_db = get_all_notes(&conn).unwrap();
+        assert!(
+            notes_in_empty_db.is_empty(),
+            "There should be no notes in the db at this point"
+        );
+    }
+
+    #[test]
+    fn test_editing_notes() {
+        let db_name = "test_edit_notes.db";
+        let test_db = init_test_db(db_name);
+        let conn = test_db.conn();
+        let file_path =
+            Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/resources/noteset_to_edit.txt");
+        let dataset = read_file_to_vector(file_path).unwrap();
+
+        create_table(&conn).unwrap();
+
+        for quote in dataset {
+            create_new_note(&conn, quote).unwrap();
+        }
+
+        let notes = get_all_notes(&conn).unwrap();
+
+        let first_note = notes.first().unwrap();
+        let second_note = notes.get(1).unwrap();
+        let third_note = notes.get(2).unwrap();
+
+        assert_eq!(
+            "Tonight, I intend to have some fun by coding.",
+            first_note.get_content(),
+            "Note should have correct content"
+        );
+
+        assert_eq!(
+            "WTF did I code yesterday?",
+            second_note.get_content(),
+            "Note should have correct content"
+        );
+
+        assert_eq!(
+            "Tomorrow I'll look at this spaghetti.",
+            third_note.get_content(),
+            "Note should have correct content"
+        );
+
+        let id = String::from(third_note.get_id());
+        let content = third_note
+            .get_content()
+            .to_string()
+            .replace("Tomorrow", "Now");
+
+        let edited_rows = edit_note(&conn, &id, &content).unwrap();
+
+        assert_eq!(1, edited_rows, "Editing should result in 1 updated row");
+
+        let updated_notes = get_all_notes(&conn).unwrap();
+        let updated_third_note = updated_notes.get(2).unwrap();
+
+        assert_eq!(
+            "Now I'll look at this spaghetti.",
+            updated_third_note.get_content(),
+            "The content of thins note should have been updated"
+        );
+
+        assert_eq!(
+            third_note.get_id(),
+            updated_third_note.get_id(),
+            "The ID should not have been changed"
+        );
+
+        assert!(
+            third_note.get_date() < updated_third_note.get_date(),
+            "The date should have been changed"
+        );
     }
 }

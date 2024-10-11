@@ -46,6 +46,10 @@ impl Note {
         self.date
     }
 
+    pub fn create_new_timestamp() -> i64 {
+        Local::now().timestamp()
+    }
+
     fn get_datetime(&self) -> String {
         let datetime = Local.timestamp_opt(self.date, 0);
         match datetime {
