@@ -62,23 +62,12 @@ pub fn note_iter_into_vec<I>(iterator: I) -> Result<Vec<Note>, NoteError>
 where
     I: IntoIterator<Item = Result<Result<Note, String>, Error>>,
 {
-    let mut result: Vec<Note> = vec![];
-
-    for iter_result in iterator {
-        match iter_result {
-            Ok(note_result) => match note_result {
-                Ok(note) => {
-                    result.push(note);
-                }
-                Err(e) => {
-                    return Err(NoteError::UnwrapNoteError(e));
-                }
-            },
-            Err(e) => {
-                return Err(NoteError::RustqliteError(e));
-            }
-        }
-    }
-
-    Ok(result)
+    iterator
+        .into_iter()
+        .map(|iter_result| {
+            iter_result
+                .map_err(NoteError::RustqliteError)?
+                .map_err(NoteError::UnwrapNoteError)
+        })
+        .collect()
 }
