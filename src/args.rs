@@ -122,11 +122,7 @@ pub fn handle_args(conn: Connection, args: NotedArgs) -> Result<(), NoteError> {
     match args.command {
         Commands::New { content, file, gui } => {
             if let Some(file) = file {
-                let note_content = match read_file_to_string(&file) {
-                    Ok(note_content) => note_content,
-                    Err(e) => return Err(NoteError::FileError(e.to_string())),
-                };
-
+                let note_content = read_file_to_string(&file)?;
                 create_new_note(&conn, note_content)?;
             } else if gui {
                 create_note_from_gui(&conn)?;

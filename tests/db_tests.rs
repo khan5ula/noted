@@ -37,15 +37,11 @@ mod tests {
     }
 
     fn read_file_to_vector(path: PathBuf) -> Result<Vec<String>, NoteError> {
-        let file = match File::open(path) {
-            Ok(file) => file,
-            Err(e) => return Err(NoteError::FileError(e.to_string())),
-        };
-
+        let file = File::open(path).map_err(NoteError::FileError)?;
         let buf = BufReader::new(file);
 
         buf.lines()
-            .map(|l| l.map_err(|e| NoteError::FileError(e.to_string())))
+            .map(|l| l.map_err(NoteError::FileError))
             .collect()
     }
 

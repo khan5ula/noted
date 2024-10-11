@@ -5,7 +5,8 @@ use ansi_term::Colour::Blue;
 use chrono::prelude::*;
 use chrono::Local;
 use rusqlite::Error;
-use std::error::Error as StdError;
+use std::io::Error as IoError;
+use thiserror::Error;
 
 #[derive(Debug)]
 pub struct Note {
@@ -72,37 +73,20 @@ impl fmt::Display for Note {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum NoteError {
-    IterationError(Error),
+    #[error("Failed to unwrap note: {0}")]
     UnwrapNoteError(String),
-    RustqliteError(Error),
-    FileError(String),
+
+    #[error("SQLite error: {0}")]
+    RustqliteError(#[from] Error),
+
+    #[error("File error: {0}")]
+    FileError(#[from] IoError),
+
+    #[error("Input error: {0}")]
     InputError(String),
+
+    #[error("Unexpected result: {0}")]
     UnexpectedResultError(String),
 }
-
-impl fmt::Display for NoteError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            NoteError::IterationError(e) => {
-                write!(f, "Couldn't iterate through notes: {}", e)
-            }
-            NoteError::UnwrapNoteError(e) => write!(f, "Couldn't unwrap note: {}", e),
-            NoteError::RustqliteError(e) => {
-                write!(f, "Rustqlite error while handling notes: {}", e)
-            }
-            NoteError::FileError(e) => {
-                write!(f, "Error occured while trying to parse a file: {}", e)
-            }
-            NoteError::InputError(e) => {
-                write!(f, "Error while reading user input: {}", e)
-            }
-            NoteError::UnexpectedResultError(e) => {
-                write!(f, "Received unexpected result: {}", e)
-            }
-        }
-    }
-}
-
-impl StdError for NoteError {}

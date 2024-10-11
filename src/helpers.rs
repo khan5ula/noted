@@ -1,5 +1,4 @@
-use crate::note::Note;
-use crate::note::NoteError;
+use crate::note::{Note, NoteError};
 use rusqlite::Error;
 use std::fs::File;
 use std::io::Read;
@@ -36,17 +35,14 @@ pub fn read_y_or_no_input(prompt: &str) -> Result<char, NoteError> {
 }
 
 pub fn read_file_to_string(path: &str) -> Result<String, NoteError> {
-    let mut file = match File::open(path) {
-        Ok(file) => file,
-        Err(e) => return Err(NoteError::FileError(e.to_string())),
-    };
-
+    let mut file = File::open(path).map_err(NoteError::FileError)?;
     let mut file_content = String::new();
 
-    match file.read_to_string(&mut file_content) {
-        Ok(_) => Ok(file_content),
-        Err(e) => Err(NoteError::FileError(e.to_string())),
-    }
+    let _ = file
+        .read_to_string(&mut file_content)
+        .map_err(NoteError::FileError);
+
+    Ok(file_content)
 }
 
 pub fn print_notes(notes: Vec<Note>) {
@@ -79,7 +75,7 @@ where
                 }
             },
             Err(e) => {
-                return Err(NoteError::IterationError(e));
+                return Err(NoteError::RustqliteError(e));
             }
         }
     }
