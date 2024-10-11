@@ -25,5 +25,5 @@ jobs:
         continue-on-error: true
       - run: ls -al
         continue-on-error: true
-      - run: ./scripts/init_db_dir.sh
+      - run: bash ./.github/init_db_dir.sh
       - run: cargo test --verbose
