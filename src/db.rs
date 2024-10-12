@@ -80,7 +80,7 @@ pub fn create_note_from_gui(conn: &Connection) -> Result<(), NoteError> {
         let note_content = read_file_to_string(&filename)?;
 
         create_new_note(conn, note_content)?;
-        fs::remove_file(filename).map_err(NoteError::FileError)?;
+        fs::remove_file(filename).map_err(NoteError::IoError)?;
     }
 
     Ok(())
@@ -178,7 +178,7 @@ pub fn edit_note_with_gui(
             "--show-uri",
             "--indent",
             "--brackets",
-            "--title=Noted - New Note",
+            "--title=Noted - Edit Note",
             "--width=900",
             "--height=800",
             "--button=Cancel (Esc)!gtk-cancel:1",
@@ -197,12 +197,12 @@ pub fn edit_note_with_gui(
 
         let note_content = read_file_to_string(&new_content_filepath)?;
 
-        fs::remove_file(new_content_filepath).map_err(NoteError::FileError)?;
-        fs::remove_file(note_to_edit_path).map_err(NoteError::FileError)?;
+        fs::remove_file(new_content_filepath).map_err(NoteError::IoError)?;
+        fs::remove_file(note_to_edit_path).map_err(NoteError::IoError)?;
         edit_note(conn, id, &note_content)
     } else {
         // Ensure the note to edit tmp file is removed if the yad operation is cancelled
-        fs::remove_file(note_to_edit_path).map_err(NoteError::FileError)?;
+        fs::remove_file(note_to_edit_path).map_err(NoteError::IoError)?;
         Ok(0)
     }
 }
@@ -224,7 +224,6 @@ pub fn handle_edit_note(conn: &Connection, note: &Note) -> Result<usize, NoteErr
     let buf = note.get_content().as_bytes();
 
     file.write_all(buf).expect("Failed to write to file");
-
     let id = note.get_id().to_string();
 
     edit_note_with_gui(conn, &filename, &id)

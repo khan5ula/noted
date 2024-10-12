@@ -129,7 +129,7 @@ pub fn handle_args(conn: Connection, args: NotedArgs) -> Result<(), NoteError> {
             } else if let Some(note_content) = content {
                 create_new_note(&conn, note_content.join(" "))?;
             } else {
-                return Err(NoteError::InputError(
+                return Err(NoteError::UnexpectedResultError(
                     "Provide either note content, --file or --gui".to_string(),
                 ));
             }

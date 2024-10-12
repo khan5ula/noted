@@ -37,12 +37,10 @@ mod tests {
     }
 
     fn read_file_to_vector(path: PathBuf) -> Result<Vec<String>, NoteError> {
-        let file = File::open(path).map_err(NoteError::FileError)?;
+        let file = File::open(path).map_err(NoteError::IoError)?;
         let buf = BufReader::new(file);
 
-        buf.lines()
-            .map(|l| l.map_err(NoteError::FileError))
-            .collect()
+        buf.lines().map(|l| l.map_err(NoteError::IoError)).collect()
     }
 
     fn init_test_db(db_name: &str) -> TestDb {

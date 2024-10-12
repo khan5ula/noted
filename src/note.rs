@@ -4,7 +4,7 @@ extern crate chrono;
 use ansi_term::Colour::Blue;
 use chrono::prelude::*;
 use chrono::Local;
-use rusqlite::Error;
+use rusqlite::Error as SqlError;
 use std::io::Error as IoError;
 use thiserror::Error;
 
@@ -79,13 +79,10 @@ pub enum NoteError {
     UnwrapNoteError(String),
 
     #[error("SQLite error: {0}")]
-    RustqliteError(#[from] Error),
+    RustqliteError(#[from] SqlError),
 
     #[error("File error: {0}")]
-    FileError(#[from] IoError),
-
-    #[error("Input error: {0}")]
-    InputError(String),
+    IoError(#[from] IoError),
 
     #[error("Unexpected result: {0}")]
     UnexpectedResultError(String),
