@@ -2,10 +2,11 @@ use crate::db::{
     create_new_note, create_note_from_gui, delete_all_notes, delete_note, get_all_notes,
     get_notes_with_qty_and_order, handle_edit_note, search_notes_by_content, search_notes_by_id,
 };
-use crate::helpers::{print_notes, read_file_to_string, read_y_or_no_input};
+use crate::helpers::{print_notes, read_file_to_string};
 use crate::note::NoteError;
 use ansi_term::Colour::Blue;
 use clap::{Parser, Subcommand};
+use inquire::Confirm;
 use noted::SortOrder;
 use rusqlite::Connection;
 
@@ -137,27 +138,30 @@ pub fn handle_args(conn: Connection, args: NotedArgs) -> Result<(), NoteError> {
 
         Commands::All => {
             let notes = get_all_notes(&conn)?;
-            print_notes(notes);
+            print_notes(notes)
         }
 
         Commands::Last { count } => {
             let notes = get_notes_with_qty_and_order(&conn, count, SortOrder::Desc)?;
-            print_notes(notes);
+            print_notes(notes)
         }
 
         Commands::First { count } => {
             let notes = get_notes_with_qty_and_order(&conn, count, SortOrder::Asc)?;
-            print_notes(notes);
+            print_notes(notes)
         }
 
         Commands::Delete { id, all } => {
             if all {
-                let prompt = "Are you sure you want to remove all notes?";
-                let answer = read_y_or_no_input(prompt)?;
+                let answer = Confirm::new("Are you sure you want to remove all notes?")
+                    .with_default(false)
+                    .with_help_message("This operation cannot be undone")
+                    .prompt();
                 match answer {
-                    'y' => {
+                    Ok(true) => {
                         let count = delete_all_notes(&conn)?;
                         println!("Deleted {} notes", count);
+                        return Ok(());
                     }
                     _ => {
                         println!("Aborting");
@@ -170,6 +174,7 @@ pub fn handle_args(conn: Connection, args: NotedArgs) -> Result<(), NoteError> {
                     "Deleted {} note(s) with ID starting with '{}'",
                     count, to_be_deleted
                 );
+                return Ok(());
             }
         }
 

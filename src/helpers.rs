@@ -2,34 +2,6 @@ use crate::note::{Note, NoteError};
 use rusqlite::Error;
 use std::fs::File;
 use std::io::Read;
-use std::io::{self, Write};
-
-pub fn read_y_or_no_input(prompt: &str) -> Result<char, NoteError> {
-    print!("{} [y]/[n]\n==> ", prompt);
-    io::stdout().flush().map_err(NoteError::IoError)?;
-
-    let mut user_input = String::new();
-    let _ = io::stdin()
-        .read_line(&mut user_input)
-        .map_err(NoteError::IoError);
-
-    let choice = user_input.trim().chars().next();
-
-    if let Some(input) = choice {
-        match input.to_lowercase().next() {
-            Some('y') => Ok('y'),
-            Some('n') => Ok('n'),
-            _ => {
-                println!("Invalid input");
-                Err(NoteError::UnexpectedResultError(
-                    "Input must be 'y' or 'n'.".to_string(),
-                ))
-            }
-        }
-    } else {
-        Ok('n')
-    }
-}
 
 pub fn read_file_to_string(path: &str) -> Result<String, NoteError> {
     let mut file = File::open(path).map_err(NoteError::IoError)?;

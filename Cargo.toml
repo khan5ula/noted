@@ -1,8 +1,11 @@
 [package]
 name = "noted"
-version = "0.1.0"
+version = "0.1.5"
 edition = "2021"
 description = "A (mostly) terminal based application for creating, reading and managing quick notes"
+authors = ["Kristian Hannula"]
+license = "MIT"
+readme = "README.md"
 
 [dependencies]
 uuid = { version = "1.10.0", features = [
@@ -16,3 +19,4 @@ ansi_term = "0.12.1"
 clap = { version = "4.5.19", features = ["derive"] }
 thiserror = "1.0.64"
 tempfile = "3.13.0"
+inquire = "0.7.5"
